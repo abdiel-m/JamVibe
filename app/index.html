@@ -11,13 +11,14 @@
 :root {
   --bg: #0B0B10; --bg-2: #121219; --card: #18181F; --card-hi: #23232D; --line: #2B2B36;
   --fg: #FFFFFF; --muted: #A4A3B2; --accent: #FF8A4C; --accent-2: #FF5E8A; --accent-ink: #0B0B10; --good: #5FD3B4;
-  --hero-a: #FF8A4C59;   /* set per group from CONFIG.groups[...].color */
+  --hero-a: #FF8A4C66;   /* set per screen from CONFIG.theme.screens */
   --font: ui-rounded, "SF Pro Rounded", "Nunito", "Varela Round", system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
   --mono: ui-monospace, "SF Mono", Menlo, Consolas, monospace;
-  --r: 14px; --nav-h: 62px; --mini-h: 58px;
+  --r: 14px; --nav-h: 62px; --fab-h: 56px;  /* --fab-h: room for the floating day button */
   color-scheme: dark;
 }
 * { box-sizing: border-box; }
+[hidden] { display: none !important; }   /* the standalone file has no host reset */
 html, body { height: 100%; }
 body { margin: 0; background: var(--bg); color: var(--fg); font: 15px/1.45 var(--font); -webkit-font-smoothing: antialiased; }
 button, input, select { font: inherit; color: inherit; }
@@ -25,9 +26,9 @@ button { cursor: pointer; }
 :focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
 .app { max-width: 430px; margin: 0 auto; min-height: 100%; position: relative; isolation: isolate;
   padding-left: max(16px, env(safe-area-inset-left, 0px)); padding-right: max(16px, env(safe-area-inset-right, 0px));
-  padding-block: 10px calc(var(--nav-h) + var(--mini-h) + 36px + env(safe-area-inset-bottom, 0px)); }
+  padding-block: 10px calc(var(--nav-h) + var(--fab-h) + 28px + env(safe-area-inset-bottom, 0px)); }
 .app::before { content: ""; position: absolute; inset: 0 0 auto; height: 340px; z-index: -1; pointer-events: none;
-  background: linear-gradient(180deg, var(--hero-a), transparent); }
+  background: linear-gradient(180deg, var(--hero-a), transparent); transition: background 0.3s; }
 @media (min-width: 560px) { body { background: #050507; } .app { background: var(--bg); border-inline: 1px solid var(--line); } }
 h1, h2, h3 { margin: 0; font-weight: 900; letter-spacing: -0.02em; line-height: 1.1; text-wrap: balance; }
 h1 { font-size: 32px; } h2 { font-size: 20px; font-weight: 800; } h3 { font-size: 15px; font-weight: 800; }
@@ -70,7 +71,7 @@ p { margin: 0; }
 .input, select.input { width: 100%; background: var(--card-hi); border: 0; border-radius: 10px; padding: 12px; color: var(--fg); font-weight: 700; }
 .bar { height: 4px; background: #FFFFFF26; border-radius: 999px; overflow: hidden; }
 .bar i { display: block; height: 100%; background: var(--fg); border-radius: 999px; }
-.card.race .bar i, .mini .prog i { background: linear-gradient(90deg, var(--accent), var(--accent-2)); }
+.card.race .bar i { background: linear-gradient(90deg, var(--accent), var(--accent-2)); }
 
 /* People */
 .av { --c: var(--accent); width: 34px; height: 34px; border-radius: 50%; background: var(--c); color: var(--accent-ink); display: inline-grid; place-items: center; font-weight: 900; font-size: 14px; flex: none; }
@@ -129,19 +130,14 @@ p { margin: 0; }
 .note { font-size: 13px; color: var(--fg); background: #FFFFFF14; border-radius: 10px; padding: 10px 12px; font-weight: 700; }
 .empty { text-align: center; color: var(--muted); padding: 18px 8px; }
 
-/* Mini race player + frosted tab bar */
-.mini { position: fixed; z-index: 6; left: 50%; transform: translateX(-50%); width: min(calc(100% - 16px), 414px);
-  bottom: calc(var(--nav-h) + 8px + env(safe-area-inset-bottom, 0px)); height: var(--mini-h);
-  display: flex; align-items: center; gap: 10px; padding: 8px 10px 10px; border-radius: 10px;
-  background: linear-gradient(90deg, var(--hero-a), #2A2733), #2A2733; box-shadow: 0 10px 30px #0009; }
-.mini .art { border-radius: 4px; box-shadow: none; }
-.mini-t { font-weight: 900; font-size: 14px; }
-.mini-s { font-size: 12px; color: #FFFFFFB3; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-.mini .play { width: 38px; height: 38px; border-radius: 50%; border: 0; background: var(--fg); color: var(--bg); display: grid; place-items: center; flex: none; }
-.mini .play:disabled { opacity: 0.5; cursor: not-allowed; }
-.mini .play svg { width: 18px; height: 18px; }
-.mini .prog { position: absolute; left: 10px; right: 10px; bottom: 4px; height: 2px; background: #FFFFFF33; border-radius: 2px; overflow: hidden; }
-.mini .prog i { display: block; height: 100%; }
+/* Floating day button (bottom-right, above the tab bar) + frosted tab bar */
+.fab { position: fixed; z-index: 6; right: max(16px, calc((100vw - 430px) / 2 + 16px));
+  bottom: calc(var(--nav-h) + 14px + env(safe-area-inset-bottom, 0px)); height: 48px; padding: 0 16px 0 12px;
+  display: inline-flex; align-items: center; gap: 8px; border: 0; border-radius: 999px; font-weight: 900; font-size: 14px;
+  background: linear-gradient(135deg, var(--accent), var(--accent-2)); color: var(--accent-ink); box-shadow: 0 10px 28px #FF8A4C55, 0 2px 8px #0008; }
+.fab svg { width: 20px; height: 20px; }
+.fab:disabled { background: var(--card-hi); color: var(--muted); box-shadow: 0 2px 8px #0008; cursor: not-allowed; }
+@media (prefers-reduced-motion: no-preference) { .fab:not(:disabled):active { transform: scale(0.94); } }
 .nav { position: fixed; bottom: 0; left: 50%; transform: translateX(-50%); width: min(100%, 430px); z-index: 5;
   background: #0B0B10D9; display: grid; grid-template-columns: repeat(5, 1fr); backdrop-filter: blur(20px) saturate(1.4); -webkit-backdrop-filter: blur(20px) saturate(1.4);
   padding: 6px max(8px, env(safe-area-inset-left, 0px)) calc(6px + env(safe-area-inset-bottom, 0px)); }
@@ -157,7 +153,7 @@ p { margin: 0; }
   padding: 18px max(16px, env(safe-area-inset-left, 0px)) calc(20px + env(safe-area-inset-bottom, 0px)); display: grid; gap: 10px; }
 .sheet .li { padding: 10px 0; }
 .sheet .li button { all: unset; cursor: pointer; display: flex; gap: 12px; align-items: center; width: 100%; font-weight: 800; }
-#toast { position: fixed; left: 50%; transform: translateX(-50%); bottom: calc(var(--nav-h) + var(--mini-h) + 22px + env(safe-area-inset-bottom, 0px)); z-index: 20;
+#toast { position: fixed; left: 50%; transform: translateX(-50%); bottom: calc(var(--nav-h) + var(--fab-h) + 22px + env(safe-area-inset-bottom, 0px)); z-index: 20;
   background: var(--fg); color: var(--bg); padding: 10px 16px; border-radius: 10px; font-weight: 800; font-size: 14px; max-width: calc(100% - 32px); text-align: center; }
 @media (prefers-reduced-motion: no-preference) { .card.hot { animation: pop 0.5s ease-out; } @keyframes pop { from { transform: scale(0.98); } to { transform: none; } } .tile:active, .quick button:active { transform: scale(0.97); } }
 </style>
@@ -167,7 +163,7 @@ p { margin: 0; }
   <header class="top" id="top"></header>
   <main id="screen" tabindex="-1"></main>
 </div>
-<div class="mini" id="mini" role="region" aria-label="Monthly race"></div>
+<button class="fab" id="fab" data-action="simulate-day"></button>
 <nav class="nav" id="nav" aria-label="Main"></nav>
 <div id="sheet" hidden></div>
 <div id="toast" role="status" aria-live="polite" hidden></div>
@@ -208,6 +204,13 @@ const CONFIG = {
     pop:    { name: "Mostly Pop",     code: "POPCLUB", color: "#FF6F91", extraMembers: [] },
     hiphop: { name: "Mostly Hip Hop", code: "BARS",    color: "#F2C14E", extraMembers: ["grace"] },
     kpop:   { name: "Mostly K-Pop",   code: "ROOMIES", color: "#C792EA", extraMembers: ["grace"] },
+  },
+  // Gradient at the top of each screen. Built around the JamVibe orange (hue ~20°):
+  // gold and coral are its neighbors (analogous), teal is its opposite (complementary), violet is triadic.
+  theme: {
+    screens: { home: "#FF8A4C", rank: "#F2B33D", match: "#FF5E7A", challenges: "#2FB8C4", recap: "#8C6BFF",
+               compare: "#FF8A4C", share: "#FF8A4C", join: "#FF8A4C" },
+    strength: "66",                      // gradient opacity as a hex alpha (00-FF)
   },
   startJoined: ["pop", "hiphop"],        // groups the viewer is already in; others are joined with their code
 
@@ -274,7 +277,7 @@ const TEXT = {
   groupSound: "Group Sound", groupSoundSub: "Top genres, with every member weighted equally", leansHardest: "{name} leans hardest ({pct})", leansHardestYou: "You lean hardest ({pct})",
   compareGroups: "Compare with another group",
   greetMorning: "Good morning, {name}", greetAfternoon: "Good afternoon, {name}", greetEvening: "Good evening, {name}",
-  topThisMonth: "Top artists this month", miniSub: "{group} · {results}",
+  topThisMonth: "Top artists this month", fabDay: "Day {day}", fabLabel: "Simulate a day (now day {day} of {days})",
   resetDemo: "Reset demo",
   // Group switcher and join
   yourGroups: "Your groups", joinGroup: "Join a group", joinTitle: "Join a group",
@@ -379,7 +382,7 @@ function cover(seed, size = 48, color) {
   const dim = size ? `width:${size}px;height:${size}px;font-size:${Math.round(size * 0.36)}px` : "";
   return `<span class="art${size ? "" : " fluid"}" style="--art:${bg};${dim}" aria-hidden="true">${esc(letters)}</span>`;
 }
-const PLAY = '<svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M8 5.5v13l10.5-6.5z"/></svg>';
+const SKIP = '<svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M4 6v12l8.5-6zM12.5 6v12L21 12z"/></svg>';
 const DONE = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12.5l4.5 4.5L19 7"/></svg>';
 const CROWN = '<svg class="crown" viewBox="0 0 24 24" fill="currentColor" aria-label="Crown"><path d="M3 8l4.5 4L12 5l4.5 7L21 8l-2 11H5z"/></svg>';
 
@@ -570,14 +573,6 @@ function raceResults() {
 function greeting() {
   const h = new Date().getHours();
   return t(h < 12 ? "greetMorning" : h < 18 ? "greetAfternoon" : "greetEvening", { name: nameOf(CONFIG.viewer) });
-}
-/** Mini player above the tab bar: the monthly race, with a play-style button that simulates a day. */
-function miniHtml() {
-  const g = CONFIG.groups[state.group], m = MONTHS[THIS], done = state.day >= m.days;
-  return `${cover(g.name, 40, g.color)}
-    <div class="grow"><div class="mini-t">${tx("raceDay", { day: state.day, days: m.days })}</div><div class="mini-s">${tx("miniSub", { group: g.name, results: raceResults() })}</div></div>
-    <button class="play" data-action="simulate-day" aria-label="${done ? tx("monthDone") : tx("simulateDay")}" title="${done ? tx("monthDone") : tx("simulateDay")}" ${done ? "disabled" : ""}>${done ? DONE : PLAY}</button>
-    <div class="prog"><i style="width:${(state.day / m.days) * 100}%"></i></div>`;
 }
 
 function renderHome() {
@@ -1003,10 +998,16 @@ function render() {
     ? `<button class="back" data-action="close-overlay">${icon("back")}${tx("back")}</button><span class="brand">${brandHtml()}</span>`
     : `<span class="brand">${brandHtml()}</span><button class="switcher" data-action="open-switcher" aria-haspopup="dialog"><span>${esc(CONFIG.groups[state.group].name)}</span>${icon("chevron")}</button>`;
   $("#screen").innerHTML = SCREENS[screen]();
-  document.querySelector(".app").style.setProperty("--hero-a", (CONFIG.groups[state.group].color || "#FF8A4C") + "59");
-  document.documentElement.style.setProperty("--hero-a", (CONFIG.groups[state.group].color || "#FF8A4C") + "59");
-  $("#mini").hidden = !!state.overlay;
-  $("#mini").innerHTML = state.overlay ? "" : miniHtml();
+  // Screen gradient color (see CONFIG.theme)
+  const tint = (CONFIG.theme.screens[screen] || CONFIG.theme.screens.home) + CONFIG.theme.strength;
+  document.querySelector(".app").style.setProperty("--hero-a", tint);
+  // Floating day button: main tabs only
+  const fab = $("#fab"), m = MONTHS[THIS], done = state.day >= m.days;
+  fab.hidden = !!state.overlay;
+  fab.disabled = done;
+  fab.innerHTML = `${done ? DONE : SKIP}<span>${tx("fabDay", { day: state.day })}</span>`;
+  fab.setAttribute("aria-label", done ? t("monthDone") : t("fabLabel", { day: state.day, days: m.days }));
+  fab.title = fab.getAttribute("aria-label");
   $("#nav").innerHTML = TABS.map(([k, label]) => `<button data-action="tab" data-value="${k}" ${!state.overlay && state.tab === k ? 'aria-current="page"' : ""}>${icon(k, "")}${tx(label)}</button>`).join("");
   if (screen === "share" && $("#share-canvas")) {
     // Drawn on a hidden canvas, shown as an <img> so long-press / right-click "Save image" works everywhere.
