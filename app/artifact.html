@@ -262,6 +262,8 @@ const TEXT = {
   shareTitle: "Share card", shareArtist: "Artist", shareLead: "I'm the", shareTail: "fan in {group}",
   sharePlays: "{n} plays in {month}", shareNoPlays: "Play an artist this month to make a card.",
   saveImage: "Save image", saved: "Image saved.", saveDeclined: "Save cancelled.", saveFailed: "Couldn't save the image here. Try the standalone file.",
+  saveUnavailable: "Saving isn't available in this view. Long-press or right-click the card and choose Save image.",
+  downloadStarted: "Download started.", saveHint: "Tip: you can also long-press or right-click the card to save it.",
   // Compare
   compareTitle: "Group vs. group", signatureArtist: "Signature artist", sharedBetween: "Shared artists",
   noSharedGroups: "These groups have no artists in common.", needTwoGroups: "Join another group to compare.",
@@ -781,8 +783,10 @@ function renderShare() {
     ${ranks.length ? `
       <label class="field" for="share-artist">${tx("shareArtist")}
         <select class="input" id="share-artist">${ranks.slice(0, 30).map((r) => `<option value="${esc(r.artist)}" ${r.artist === state.shareArtist ? "selected" : ""}>#${r.rank} · ${esc(r.artist)}</option>`).join("")}</select></label>
-      <canvas id="share-canvas" class="share-preview" width="1080" height="1920" role="img" aria-label="${esc(shareSentence(gk))}"></canvas>
-      <button class="btn" data-action="save-image">${tx("saveImage")}</button>` : `<p class="empty">${tx("shareNoPlays")}</p>`}
+      <canvas id="share-canvas" width="1080" height="1920" hidden></canvas>
+      <img id="share-img" class="share-preview" alt="${esc(shareSentence(gk))}">
+      <button class="btn" data-action="save-image">${tx("saveImage")}</button>
+      <p class="small muted" style="text-align:center">${tx("saveHint")}</p>` : `<p class="empty">${tx("shareNoPlays")}</p>`}
   </section>`;
 }
 function shareInfo(gk) { return viewerRanks(gk).find((r) => r.artist === state.shareArtist); }
@@ -825,23 +829,29 @@ function wrapLines(ctx, text, max) {
   if (cur) lines.push(cur);
   return lines;
 }
-/** Save the card as PNG: the claude.ai viewer's save dialog when present, else a normal browser download. */
+/** True when the page runs inside another page's frame (e.g. the claude.ai viewer), where plain downloads are blocked. */
+function inFrame() { try { return window.self !== window.top; } catch { return true; } }
+
+/** Save the card as PNG: the claude.ai viewer's save dialog when offered, a normal download when standalone. */
 async function saveImage() {
   const canvas = $("#share-canvas");
   if (!canvas) return;
   const blob = await new Promise((res) => canvas.toBlob(res, "image/png"));
   if (!blob) { toast(t("saveFailed")); return; }
   const filename = `${CONFIG.appName.toLowerCase()}-${(state.shareArtist || "card").toLowerCase().replace(/[^a-z0-9]+/g, "-")}.png`;
-  const host = window.claude && typeof window.claude.use === "function" ? await window.claude.use("downloads").catch(() => null) : null;
+  const viewer = window.claude && typeof window.claude.use === "function";
+  const host = viewer ? await window.claude.use("downloads").catch(() => null) : null;
   if (host) {
     try { await host.save({ filename, data: blob }); toast(t("saved")); }
-    catch (e) { toast(e && e.code === "declined" ? t("saveDeclined") : t("saveFailed")); }
+    catch (e) { toast(e && e.code === "declined" ? t("saveDeclined") : t("saveUnavailable")); }
     return;
   }
+  // Inside a viewer without the save dialog (e.g. a signed-out visitor), a download link does nothing: say so.
+  if (viewer || inFrame()) { toast(t("saveUnavailable")); return; }
   const url = URL.createObjectURL(blob), a = document.createElement("a");
   a.href = url; a.download = filename; document.body.appendChild(a); a.click(); a.remove();
   setTimeout(() => URL.revokeObjectURL(url), 4000);
-  toast(t("saved"));
+  toast(t("downloadStarted"));   // the page can't confirm the browser actually saved it
 }
 
 function renderCompare() {
@@ -904,7 +914,11 @@ function render() {
     : `<span class="brand">${brandHtml()}</span><button class="switcher" data-action="open-switcher" aria-haspopup="dialog"><span>${esc(CONFIG.groups[state.group].name)}</span>${icon("chevron")}</button>`;
   $("#screen").innerHTML = SCREENS[screen]();
   $("#nav").innerHTML = TABS.map(([k, label]) => `<button data-action="tab" data-value="${k}" ${!state.overlay && state.tab === k ? 'aria-current="page"' : ""}>${icon(k, "")}${tx(label)}</button>`).join("");
-  if (screen === "share" && $("#share-canvas")) drawShareCard($("#share-canvas"), state.group);
+  if (screen === "share" && $("#share-canvas")) {
+    // Drawn on a hidden canvas, shown as an <img> so long-press / right-click "Save image" works everywhere.
+    drawShareCard($("#share-canvas"), state.group);
+    try { $("#share-img").src = $("#share-canvas").toDataURL("image/png"); } catch { /* preview only; Save image still works */ }
+  }
   save();
 }
 function brandHtml() { const n = CONFIG.appName, i = Math.ceil(n.length / 2); return /^Jam/.test(n) ? `Jam<b>${esc(n.slice(3))}</b>` : `${esc(n.slice(0, i))}<b>${esc(n.slice(i))}</b>`; }
@@ -922,7 +936,7 @@ function openSwitcher() {
 function closeSheet() { $("#sheet").hidden = true; $("#sheet").innerHTML = ""; }
 
 let toastTimer;
-function toast(msg) { const el = $("#toast"); el.textContent = msg; el.hidden = false; clearTimeout(toastTimer); toastTimer = setTimeout(() => { el.hidden = true; }, 2600); }
+function toast(msg) { const el = $("#toast"); el.textContent = msg; el.hidden = false; clearTimeout(toastTimer); toastTimer = setTimeout(() => { el.hidden = true; }, msg.length > 60 ? 5000 : 2600); }
 function go(tab) { state.tab = tab; state.overlay = null; render(); window.scrollTo(0, 0); }
 function overlay(name) { closeSheet(); state.overlay = name; render(); window.scrollTo(0, 0); }
 
