@@ -1,0 +1,1436 @@
+{
+ "country": "United States",
+ "country_users": 71387,
+ "sample_users": 11117,
+ "k": 9,
+ "scores": {
+  "inertia": 852.15,
+  "inertia_per_user": 0.0767,
+  "silhouette": 0.222,
+  "silhouette_sample": 1000
+ },
+ "clusters": [
+  {
+   "cluster": 0,
+   "size": 2773,
+   "top_genres": [
+    [
+     "alternative rock",
+     0.088
+    ],
+    [
+     "indie rock",
+     0.08
+    ],
+    [
+     "rock",
+     0.074
+    ]
+   ]
+  },
+  {
+   "cluster": 1,
+   "size": 1680,
+   "top_genres": [
+    [
+     "pop",
+     0.364
+    ],
+    [
+     "indie pop",
+     0.082
+    ],
+    [
+     "hip hop",
+     0.079
+    ]
+   ]
+  },
+  {
+   "cluster": 7,
+   "size": 1601,
+   "top_genres": [
+    [
+     "hip hop",
+     0.313
+    ],
+    [
+     "cloud rap",
+     0.073
+    ],
+    [
+     "indie rock",
+     0.064
+    ]
+   ]
+  },
+  {
+   "cluster": 3,
+   "size": 1529,
+   "top_genres": [
+    [
+     "pop",
+     0.729
+    ],
+    [
+     "hip hop",
+     0.044
+    ],
+    [
+     "electropop",
+     0.039
+    ]
+   ]
+  },
+  {
+   "cluster": 5,
+   "size": 919,
+   "top_genres": [
+    [
+     "indie rock",
+     0.389
+    ],
+    [
+     "alternative rock",
+     0.101
+    ],
+    [
+     "hip hop",
+     0.051
+    ]
+   ]
+  },
+  {
+   "cluster": 2,
+   "size": 897,
+   "top_genres": [
+    [
+     "hip hop",
+     0.666
+    ],
+    [
+     "contemporary r&b",
+     0.039
+    ],
+    [
+     "pop",
+     0.028
+    ]
+   ]
+  },
+  {
+   "cluster": 4,
+   "size": 869,
+   "top_genres": [
+    [
+     "alternative rock",
+     0.378
+    ],
+    [
+     "indie rock",
+     0.094
+    ],
+    [
+     "rock",
+     0.061
+    ]
+   ]
+  },
+  {
+   "cluster": 6,
+   "size": 581,
+   "top_genres": [
+    [
+     "k-pop",
+     0.642
+    ],
+    [
+     "pop",
+     0.112
+    ],
+    [
+     "hip hop",
+     0.046
+    ]
+   ]
+  },
+  {
+   "cluster": 8,
+   "size": 268,
+   "top_genres": [
+    [
+     "pop punk",
+     0.423
+    ],
+    [
+     "alternative rock",
+     0.076
+    ],
+    [
+     "pop",
+     0.072
+    ]
+   ]
+  }
+ ],
+ "groups": [
+  {
+   "cluster": 3,
+   "cluster_size": 1529,
+   "genre_mix": [
+    [
+     "pop",
+     0.729
+    ],
+    [
+     "hip hop",
+     0.044
+    ],
+    [
+     "electropop",
+     0.039
+    ],
+    [
+     "indie pop",
+     0.031
+    ],
+    [
+     "dance-pop",
+     0.022
+    ],
+    [
+     "indie rock",
+     0.016
+    ],
+    [
+     "k-pop",
+     0.012
+    ],
+    [
+     "alternative rock",
+     0.011
+    ],
+    [
+     "contemporary r&b",
+     0.011
+    ],
+    [
+     "pop punk",
+     0.011
+    ]
+   ],
+   "members": [
+    {
+     "name": "Grace Diaz",
+     "country": "United States",
+     "genres": [
+      [
+       "pop",
+       0.688
+      ],
+      [
+       "electropop",
+       0.136
+      ],
+      [
+       "dance-pop",
+       0.044
+      ],
+      [
+       "pop rock",
+       0.035
+      ],
+      [
+       "k-pop",
+       0.019
+      ]
+     ],
+     "top_artists": [
+      [
+       "Lady Gaga",
+       80,
+       "pop"
+      ],
+      [
+       "Taylor Swift",
+       66,
+       "pop"
+      ],
+      [
+       "Ariana Grande",
+       53,
+       "pop"
+      ],
+      [
+       "Dua Lipa",
+       51,
+       "pop"
+      ],
+      [
+       "Little Mix",
+       48,
+       "pop"
+      ]
+     ],
+     "month_total": 2037,
+     "month_cumulative": [
+      61,
+      119,
+      197,
+      274,
+      349,
+      419,
+      498,
+      561,
+      626,
+      699,
+      769,
+      826,
+      877,
+      941,
+      992,
+      1054,
+      1137,
+      1217,
+      1270,
+      1331,
+      1398,
+      1456,
+      1517,
+      1581,
+      1659,
+      1706,
+      1767,
+      1833,
+      1897,
+      1953,
+      2037
+     ],
+     "month_other_share": 0.332,
+     "key": "grace"
+    },
+    {
+     "name": "Chloe Adams",
+     "country": "United States",
+     "genres": [
+      [
+       "pop",
+       0.546
+      ],
+      [
+       "electropop",
+       0.162
+      ],
+      [
+       "trap",
+       0.119
+      ],
+      [
+       "indie rock",
+       0.11
+      ],
+      [
+       "dance-pop",
+       0.037
+      ]
+     ],
+     "top_artists": [
+      [
+       "Ellie Goulding",
+       48,
+       "electropop"
+      ],
+      [
+       "Azealia Banks",
+       39,
+       "trap"
+      ],
+      [
+       "Florence + the Machine",
+       36,
+       "indie rock"
+      ],
+      [
+       "Dua Lipa",
+       30,
+       "pop"
+      ],
+      [
+       "Lady Gaga",
+       29,
+       "pop"
+      ]
+     ],
+     "month_total": 1273,
+     "month_cumulative": [
+      33,
+      72,
+      132,
+      188,
+      225,
+      259,
+      296,
+      322,
+      373,
+      410,
+      457,
+      492,
+      523,
+      552,
+      598,
+      650,
+      714,
+      762,
+      795,
+      829,
+      874,
+      916,
+      948,
+      995,
+      1042,
+      1072,
+      1115,
+      1158,
+      1189,
+      1230,
+      1273
+     ],
+     "month_other_share": 0.591,
+     "key": "chloe"
+    },
+    {
+     "name": "Sofia Reyes",
+     "country": "United States",
+     "genres": [
+      [
+       "pop",
+       0.757
+      ],
+      [
+       "pop rock",
+       0.083
+      ],
+      [
+       "indie pop",
+       0.037
+      ],
+      [
+       "hip hop",
+       0.035
+      ],
+      [
+       "k-pop",
+       0.023
+      ]
+     ],
+     "top_artists": [
+      [
+       "Taylor Swift",
+       183,
+       "pop"
+      ],
+      [
+       "Peso Pluma",
+       55,
+       "other"
+      ],
+      [
+       "Ariana Grande",
+       54,
+       "pop"
+      ],
+      [
+       "Paramore",
+       36,
+       "pop rock"
+      ],
+      [
+       "HAIM",
+       35,
+       "other"
+      ]
+     ],
+     "month_total": 1187,
+     "month_cumulative": [
+      36,
+      62,
+      103,
+      154,
+      192,
+      224,
+      263,
+      304,
+      341,
+      380,
+      424,
+      471,
+      508,
+      547,
+      582,
+      628,
+      662,
+      711,
+      741,
+      774,
+      813,
+      849,
+      890,
+      924,
+      972,
+      1007,
+      1044,
+      1067,
+      1104,
+      1141,
+      1187
+     ],
+     "month_other_share": 0.426,
+     "key": "sofia"
+    },
+    {
+     "name": "Jordan Lee",
+     "country": "United States",
+     "genres": [
+      [
+       "pop",
+       0.807
+      ],
+      [
+       "pop punk",
+       0.138
+      ],
+      [
+       "rock",
+       0.039
+      ],
+      [
+       "punk rock",
+       0.012
+      ],
+      [
+       "nu metal",
+       0.004
+      ]
+     ],
+     "top_artists": [
+      [
+       "Taylor Swift",
+       371,
+       "pop"
+      ],
+      [
+       "blink-182",
+       64,
+       "pop punk"
+      ],
+      [
+       "Rush",
+       29,
+       "other"
+      ],
+      [
+       "John Williams",
+       28,
+       "other"
+      ],
+      [
+       "Kelly Clarkson",
+       28,
+       "pop"
+      ]
+     ],
+     "month_total": 1183,
+     "month_cumulative": [
+      27,
+      64,
+      105,
+      146,
+      167,
+      208,
+      255,
+      301,
+      336,
+      392,
+      440,
+      479,
+      512,
+      540,
+      570,
+      612,
+      664,
+      703,
+      735,
+      765,
+      795,
+      832,
+      871,
+      907,
+      954,
+      994,
+      1025,
+      1058,
+      1104,
+      1139,
+      1183
+     ],
+     "month_other_share": 0.256,
+     "key": "jordan"
+    },
+    {
+     "name": "Zoe Park",
+     "country": "United States",
+     "genres": [
+      [
+       "pop",
+       0.878
+      ],
+      [
+       "indie pop",
+       0.05
+      ],
+      [
+       "dance-pop",
+       0.024
+      ],
+      [
+       "alternative rock",
+       0.018
+      ],
+      [
+       "indie rock",
+       0.008
+      ]
+     ],
+     "top_artists": [
+      [
+       "Lady Gaga",
+       190,
+       "pop"
+      ],
+      [
+       "Shakira",
+       183,
+       "pop"
+      ],
+      [
+       "Madonna",
+       108,
+       "pop"
+      ],
+      [
+       "Lana Del Rey",
+       33,
+       "indie pop"
+      ],
+      [
+       "Robyn",
+       27,
+       "other"
+      ]
+     ],
+     "month_total": 1071,
+     "month_cumulative": [
+      34,
+      67,
+      101,
+      138,
+      168,
+      202,
+      237,
+      271,
+      302,
+      343,
+      388,
+      420,
+      459,
+      490,
+      522,
+      560,
+      603,
+      642,
+      677,
+      704,
+      732,
+      765,
+      793,
+      837,
+      884,
+      918,
+      957,
+      983,
+      1006,
+      1038,
+      1071
+     ],
+     "month_other_share": 0.216,
+     "key": "zoe"
+    },
+    {
+     "name": "Leila Haddad",
+     "country": "United States",
+     "genres": [
+      [
+       "pop",
+       0.619
+      ],
+      [
+       "dance-pop",
+       0.205
+      ],
+      [
+       "electropop",
+       0.072
+      ],
+      [
+       "hip hop",
+       0.068
+      ],
+      [
+       "indie pop",
+       0.015
+      ]
+     ],
+     "top_artists": [
+      [
+       "Lady Gaga",
+       278,
+       "pop"
+      ],
+      [
+       "Ke$ha",
+       111,
+       "dance-pop"
+      ],
+      [
+       "La Roux",
+       36,
+       "other"
+      ],
+      [
+       "Lily Allen",
+       28,
+       "other"
+      ],
+      [
+       "The Sounds",
+       24,
+       "other"
+      ]
+     ],
+     "month_total": 964,
+     "month_cumulative": [
+      21,
+      55,
+      93,
+      121,
+      159,
+      180,
+      212,
+      239,
+      272,
+      303,
+      349,
+      379,
+      414,
+      435,
+      461,
+      492,
+      527,
+      564,
+      591,
+      617,
+      645,
+      677,
+      700,
+      738,
+      781,
+      816,
+      844,
+      873,
+      903,
+      927,
+      964
+     ],
+     "month_other_share": 0.152,
+     "key": "leila"
+    },
+    {
+     "name": "Eli Turner",
+     "country": "United States",
+     "genres": [
+      [
+       "pop",
+       0.78
+      ],
+      [
+       "electropop",
+       0.081
+      ],
+      [
+       "hip hop",
+       0.073
+      ],
+      [
+       "indie pop",
+       0.029
+      ],
+      [
+       "dance-pop",
+       0.023
+      ]
+     ],
+     "top_artists": [
+      [
+       "Lady Gaga",
+       127,
+       "pop"
+      ],
+      [
+       "Taylor Swift",
+       53,
+       "pop"
+      ],
+      [
+       "Lizzo",
+       42,
+       "other"
+      ],
+      [
+       "Charli xcx",
+       39,
+       "electropop"
+      ],
+      [
+       "Sabrina Carpenter",
+       31,
+       "pop"
+      ]
+     ],
+     "month_total": 883,
+     "month_cumulative": [
+      31,
+      64,
+      86,
+      122,
+      151,
+      174,
+      205,
+      233,
+      259,
+      283,
+      312,
+      335,
+      365,
+      395,
+      420,
+      447,
+      472,
+      507,
+      527,
+      576,
+      593,
+      620,
+      645,
+      675,
+      721,
+      753,
+      778,
+      806,
+      831,
+      856,
+      883
+     ],
+     "month_other_share": 0.347,
+     "key": "eli"
+    }
+   ],
+   "month_mix": [
+    [
+     "pop",
+     0.733
+    ],
+    [
+     "electropop",
+     0.068
+    ],
+    [
+     "dance-pop",
+     0.048
+    ],
+    [
+     "hip hop",
+     0.025
+    ],
+    [
+     "pop punk",
+     0.023
+    ],
+    [
+     "indie pop",
+     0.023
+    ],
+    [
+     "pop rock",
+     0.018
+    ],
+    [
+     "indie rock",
+     0.011
+    ]
+   ],
+   "month_total": 8598
+  },
+  {
+   "cluster": 2,
+   "cluster_size": 897,
+   "genre_mix": [
+    [
+     "hip hop",
+     0.666
+    ],
+    [
+     "contemporary r&b",
+     0.039
+    ],
+    [
+     "pop",
+     0.028
+    ],
+    [
+     "experimental hip hop",
+     0.025
+    ],
+    [
+     "r&b",
+     0.025
+    ],
+    [
+     "cloud rap",
+     0.02
+    ],
+    [
+     "indie rock",
+     0.019
+    ],
+    [
+     "alternative rock",
+     0.018
+    ],
+    [
+     "trap",
+     0.015
+    ],
+    [
+     "rage",
+     0.013
+    ]
+   ],
+   "members": [
+    {
+     "name": "Isaac Fox",
+     "country": "United States",
+     "genres": [
+      [
+       "hip hop",
+       0.792
+      ],
+      [
+       "cloud rap",
+       0.035
+      ],
+      [
+       "britpop",
+       0.033
+      ],
+      [
+       "pop rap",
+       0.033
+      ],
+      [
+       "r&b",
+       0.028
+      ]
+     ],
+     "top_artists": [
+      [
+       "Kanye West",
+       116,
+       "hip hop"
+      ],
+      [
+       "Playboi Carti",
+       92,
+       "hip hop"
+      ],
+      [
+       "Drake",
+       73,
+       "hip hop"
+      ],
+      [
+       "Travi$ Scott",
+       57,
+       "hip hop"
+      ],
+      [
+       "Gunna",
+       38,
+       "other"
+      ]
+     ],
+     "month_total": 1727,
+     "month_cumulative": [
+      57,
+      102,
+      180,
+      237,
+      284,
+      341,
+      400,
+      453,
+      491,
+      558,
+      627,
+      684,
+      727,
+      774,
+      833,
+      891,
+      964,
+      1016,
+      1073,
+      1126,
+      1169,
+      1227,
+      1280,
+      1352,
+      1421,
+      1484,
+      1534,
+      1584,
+      1631,
+      1676,
+      1727
+     ],
+     "month_other_share": 0.429,
+     "key": "isaac"
+    },
+    {
+     "name": "Nina Patel",
+     "country": "United States",
+     "genres": [
+      [
+       "hip hop",
+       0.52
+      ],
+      [
+       "pop",
+       0.275
+      ],
+      [
+       "blues rock",
+       0.07
+      ],
+      [
+       "alternative rock",
+       0.057
+      ],
+      [
+       "singer-songwriter",
+       0.029
+      ]
+     ],
+     "top_artists": [
+      [
+       "Kanye West",
+       72,
+       "hip hop"
+      ],
+      [
+       "Ariana Grande",
+       45,
+       "pop"
+      ],
+      [
+       "Frank Sinatra",
+       39,
+       "other"
+      ],
+      [
+       "Kendrick Lamar",
+       23,
+       "hip hop"
+      ],
+      [
+       "John Mayer",
+       17,
+       "blues rock"
+      ]
+     ],
+     "month_total": 976,
+     "month_cumulative": [
+      38,
+      70,
+      105,
+      152,
+      175,
+      203,
+      228,
+      255,
+      278,
+      318,
+      360,
+      388,
+      423,
+      448,
+      477,
+      506,
+      543,
+      579,
+      608,
+      632,
+      661,
+      690,
+      713,
+      743,
+      785,
+      805,
+      831,
+      860,
+      892,
+      922,
+      976
+     ],
+     "month_other_share": 0.567,
+     "key": "nina"
+    },
+    {
+     "name": "Priya Shah",
+     "country": "United States",
+     "genres": [
+      [
+       "hip hop",
+       0.604
+      ],
+      [
+       "experimental hip hop",
+       0.112
+      ],
+      [
+       "r&b",
+       0.075
+      ],
+      [
+       "alternative rock",
+       0.057
+      ],
+      [
+       "pop",
+       0.03
+      ]
+     ],
+     "top_artists": [
+      [
+       "Kanye West",
+       61,
+       "hip hop"
+      ],
+      [
+       "JPEGMAFIA",
+       40,
+       "experimental hip hop"
+      ],
+      [
+       "The Weeknd",
+       38,
+       "r&b"
+      ],
+      [
+       "Kendrick Lamar",
+       30,
+       "hip hop"
+      ],
+      [
+       "Playboi Carti",
+       27,
+       "hip hop"
+      ]
+     ],
+     "month_total": 930,
+     "month_cumulative": [
+      38,
+      75,
+      107,
+      144,
+      172,
+      193,
+      223,
+      255,
+      283,
+      312,
+      346,
+      375,
+      403,
+      428,
+      459,
+      489,
+      529,
+      575,
+      608,
+      636,
+      659,
+      690,
+      715,
+      746,
+      783,
+      804,
+      833,
+      860,
+      886,
+      909,
+      930
+     ],
+     "month_other_share": 0.323,
+     "key": "priya"
+    },
+    {
+     "name": "Noah Grant",
+     "country": "United States",
+     "genres": [
+      [
+       "hip hop",
+       0.727
+      ],
+      [
+       "contemporary r&b",
+       0.079
+      ],
+      [
+       "alternative rock",
+       0.049
+      ],
+      [
+       "pop rap",
+       0.034
+      ],
+      [
+       "r&b",
+       0.019
+      ]
+     ],
+     "top_artists": [
+      [
+       "Kanye West",
+       50,
+       "hip hop"
+      ],
+      [
+       "Kendrick Lamar",
+       46,
+       "hip hop"
+      ],
+      [
+       "A$AP Rocky",
+       34,
+       "hip hop"
+      ],
+      [
+       "Travi$ Scott",
+       33,
+       "hip hop"
+      ],
+      [
+       "Lupe Fiasco",
+       32,
+       "other"
+      ]
+     ],
+     "month_total": 906,
+     "month_cumulative": [
+      26,
+      49,
+      79,
+      107,
+      137,
+      160,
+      188,
+      213,
+      241,
+      281,
+      317,
+      347,
+      374,
+      397,
+      422,
+      440,
+      480,
+      512,
+      539,
+      574,
+      610,
+      639,
+      662,
+      693,
+      732,
+      759,
+      785,
+      815,
+      844,
+      865,
+      906
+     ],
+     "month_other_share": 0.246,
+     "key": "noah"
+    },
+    {
+     "name": "Marcus Bell",
+     "country": "United States",
+     "genres": [
+      [
+       "hip hop",
+       0.422
+      ],
+      [
+       "alternative rock",
+       0.147
+      ],
+      [
+       "rock",
+       0.049
+      ],
+      [
+       "indie rock",
+       0.049
+      ],
+      [
+       "rage",
+       0.049
+      ]
+     ],
+     "top_artists": [
+      [
+       "Radiohead",
+       8,
+       "alternative rock"
+      ],
+      [
+       "Destroy Lonely",
+       8,
+       "hip hop"
+      ],
+      [
+       "Playboi Carti",
+       6,
+       "hip hop"
+      ],
+      [
+       "PARTYNEXTDOOR",
+       5,
+       "other"
+      ],
+      [
+       "The Beatles",
+       5,
+       "rock"
+      ]
+     ],
+     "month_total": 618,
+     "month_cumulative": [
+      25,
+      47,
+      74,
+      100,
+      119,
+      136,
+      153,
+      165,
+      182,
+      207,
+      229,
+      244,
+      271,
+      288,
+      304,
+      323,
+      347,
+      364,
+      389,
+      408,
+      430,
+      447,
+      462,
+      493,
+      516,
+      534,
+      546,
+      568,
+      587,
+      603,
+      618
+     ],
+     "month_other_share": 0.8,
+     "key": "marcus"
+    }
+   ],
+   "month_mix": [
+    [
+     "hip hop",
+     0.671
+    ],
+    [
+     "alternative rock",
+     0.047
+    ],
+    [
+     "pop",
+     0.043
+    ],
+    [
+     "r&b",
+     0.034
+    ],
+    [
+     "experimental hip hop",
+     0.032
+    ],
+    [
+     "contemporary r&b",
+     0.025
+    ],
+    [
+     "pop rap",
+     0.02
+    ],
+    [
+     "cloud rap",
+     0.012
+    ],
+    [
+     "electronic",
+     0.012
+    ],
+    [
+     "indie rock",
+     0.011
+    ],
+    [
+     "trap",
+     0.01
+    ],
+    [
+     "britpop",
+     0.01
+    ]
+   ],
+   "month_total": 5157
+  }
+ ],
+ "month": {
+  "year": 2026,
+  "month": 10,
+  "label": "October 2026",
+  "days": 31,
+  "simulated": true,
+  "median_plays": 1000
+ }
+}

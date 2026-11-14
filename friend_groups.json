@@ -1,0 +1,1240 @@
+{
+ "country": "United States",
+ "country_users": 71387,
+ "sample_users": 11117,
+ "k": 9,
+ "scores": {
+  "inertia": 852.15,
+  "inertia_per_user": 0.0767,
+  "silhouette": 0.222,
+  "silhouette_sample": 1000
+ },
+ "clusters": [
+  {
+   "cluster": 0,
+   "size": 2773,
+   "top_genres": [
+    [
+     "alternative rock",
+     0.088
+    ],
+    [
+     "indie rock",
+     0.08
+    ],
+    [
+     "rock",
+     0.074
+    ]
+   ]
+  },
+  {
+   "cluster": 1,
+   "size": 1680,
+   "top_genres": [
+    [
+     "pop",
+     0.364
+    ],
+    [
+     "indie pop",
+     0.082
+    ],
+    [
+     "hip hop",
+     0.079
+    ]
+   ]
+  },
+  {
+   "cluster": 7,
+   "size": 1601,
+   "top_genres": [
+    [
+     "hip hop",
+     0.313
+    ],
+    [
+     "cloud rap",
+     0.073
+    ],
+    [
+     "indie rock",
+     0.064
+    ]
+   ]
+  },
+  {
+   "cluster": 3,
+   "size": 1529,
+   "top_genres": [
+    [
+     "pop",
+     0.729
+    ],
+    [
+     "hip hop",
+     0.044
+    ],
+    [
+     "electropop",
+     0.039
+    ]
+   ]
+  },
+  {
+   "cluster": 5,
+   "size": 919,
+   "top_genres": [
+    [
+     "indie rock",
+     0.389
+    ],
+    [
+     "alternative rock",
+     0.101
+    ],
+    [
+     "hip hop",
+     0.051
+    ]
+   ]
+  },
+  {
+   "cluster": 2,
+   "size": 897,
+   "top_genres": [
+    [
+     "hip hop",
+     0.666
+    ],
+    [
+     "contemporary r&b",
+     0.039
+    ],
+    [
+     "pop",
+     0.028
+    ]
+   ]
+  },
+  {
+   "cluster": 4,
+   "size": 869,
+   "top_genres": [
+    [
+     "alternative rock",
+     0.378
+    ],
+    [
+     "indie rock",
+     0.094
+    ],
+    [
+     "rock",
+     0.061
+    ]
+   ]
+  },
+  {
+   "cluster": 6,
+   "size": 581,
+   "top_genres": [
+    [
+     "k-pop",
+     0.642
+    ],
+    [
+     "pop",
+     0.112
+    ],
+    [
+     "hip hop",
+     0.046
+    ]
+   ]
+  },
+  {
+   "cluster": 8,
+   "size": 268,
+   "top_genres": [
+    [
+     "pop punk",
+     0.423
+    ],
+    [
+     "alternative rock",
+     0.076
+    ],
+    [
+     "pop",
+     0.072
+    ]
+   ]
+  }
+ ],
+ "groups": [
+  {
+   "cluster": 3,
+   "cluster_size": 1529,
+   "genre_mix": [
+    [
+     "pop",
+     0.729
+    ],
+    [
+     "hip hop",
+     0.044
+    ],
+    [
+     "electropop",
+     0.039
+    ],
+    [
+     "indie pop",
+     0.031
+    ],
+    [
+     "dance-pop",
+     0.022
+    ],
+    [
+     "indie rock",
+     0.016
+    ],
+    [
+     "k-pop",
+     0.012
+    ],
+    [
+     "alternative rock",
+     0.011
+    ],
+    [
+     "contemporary r&b",
+     0.011
+    ],
+    [
+     "pop punk",
+     0.011
+    ]
+   ],
+   "members": [
+    {
+     "name": "Eli Turner",
+     "country": "United States",
+     "genres": [
+      [
+       "pop",
+       0.793
+      ],
+      [
+       "hip hop",
+       0.073
+      ],
+      [
+       "electropop",
+       0.072
+      ],
+      [
+       "indie pop",
+       0.025
+      ],
+      [
+       "dance-pop",
+       0.013
+      ]
+     ],
+     "top_artists": [
+      [
+       "Lady Gaga",
+       15213,
+       "pop"
+      ],
+      [
+       "Taylor Swift",
+       7370,
+       "pop"
+      ],
+      [
+       "Charli xcx",
+       4553,
+       "electropop"
+      ],
+      [
+       "Lizzo",
+       3531,
+       "other"
+      ],
+      [
+       "Sabrina Carpenter",
+       3429,
+       "pop"
+      ]
+     ],
+     "key": "eli"
+    },
+    {
+     "name": "Leila Haddad",
+     "country": "United States",
+     "genres": [
+      [
+       "pop",
+       0.649
+      ],
+      [
+       "dance-pop",
+       0.182
+      ],
+      [
+       "electropop",
+       0.064
+      ],
+      [
+       "hip hop",
+       0.064
+      ],
+      [
+       "indie pop",
+       0.016
+      ]
+     ],
+     "top_artists": [
+      [
+       "Lady Gaga",
+       7170,
+       "pop"
+      ],
+      [
+       "Ke$ha",
+       2583,
+       "dance-pop"
+      ],
+      [
+       "La Roux",
+       1016,
+       "other"
+      ],
+      [
+       "The Sounds",
+       698,
+       "other"
+      ],
+      [
+       "The Knife",
+       615,
+       "other"
+      ]
+     ],
+     "key": "leila"
+    },
+    {
+     "name": "Sofia Reyes",
+     "country": "United States",
+     "genres": [
+      [
+       "pop",
+       0.752
+      ],
+      [
+       "pop rock",
+       0.064
+      ],
+      [
+       "indie pop",
+       0.049
+      ],
+      [
+       "hip hop",
+       0.033
+      ],
+      [
+       "k-pop",
+       0.027
+      ]
+     ],
+     "top_artists": [
+      [
+       "Taylor Swift",
+       16245,
+       "pop"
+      ],
+      [
+       "Ariana Grande",
+       4735,
+       "pop"
+      ],
+      [
+       "Peso Pluma",
+       4083,
+       "other"
+      ],
+      [
+       "Paramore",
+       2587,
+       "pop rock"
+      ],
+      [
+       "HAIM",
+       2384,
+       "other"
+      ]
+     ],
+     "key": "sofia"
+    },
+    {
+     "name": "Chloe Adams",
+     "country": "United States",
+     "genres": [
+      [
+       "pop",
+       0.617
+      ],
+      [
+       "electropop",
+       0.152
+      ],
+      [
+       "trap",
+       0.092
+      ],
+      [
+       "indie rock",
+       0.077
+      ],
+      [
+       "indie pop",
+       0.038
+      ]
+     ],
+     "top_artists": [
+      [
+       "Ellie Goulding",
+       2230,
+       "electropop"
+      ],
+      [
+       "Dua Lipa",
+       2078,
+       "pop"
+      ],
+      [
+       "Lady Gaga",
+       1529,
+       "pop"
+      ],
+      [
+       "Azealia Banks",
+       1505,
+       "trap"
+      ],
+      [
+       "Florence + the Machine",
+       1255,
+       "indie rock"
+      ]
+     ],
+     "key": "chloe"
+    },
+    {
+     "name": "Grace Diaz",
+     "country": "United States",
+     "genres": [
+      [
+       "pop",
+       0.683
+      ],
+      [
+       "electropop",
+       0.143
+      ],
+      [
+       "dance-pop",
+       0.049
+      ],
+      [
+       "pop rock",
+       0.031
+      ],
+      [
+       "k-pop",
+       0.015
+      ]
+     ],
+     "top_artists": [
+      [
+       "Lady Gaga",
+       3871,
+       "pop"
+      ],
+      [
+       "Taylor Swift",
+       3063,
+       "pop"
+      ],
+      [
+       "Ariana Grande",
+       2666,
+       "pop"
+      ],
+      [
+       "Dua Lipa",
+       2612,
+       "pop"
+      ],
+      [
+       "Kylie Minogue",
+       2326,
+       "dance-pop"
+      ]
+     ],
+     "key": "grace"
+    },
+    {
+     "name": "Zoe Park",
+     "country": "United States",
+     "genres": [
+      [
+       "pop",
+       0.876
+      ],
+      [
+       "indie pop",
+       0.05
+      ],
+      [
+       "dance-pop",
+       0.025
+      ],
+      [
+       "alternative rock",
+       0.019
+      ],
+      [
+       "alternative metal",
+       0.01
+      ]
+     ],
+     "top_artists": [
+      [
+       "Shakira",
+       9489,
+       "pop"
+      ],
+      [
+       "Lady Gaga",
+       8773,
+       "pop"
+      ],
+      [
+       "Madonna",
+       5518,
+       "pop"
+      ],
+      [
+       "Lana Del Rey",
+       1722,
+       "indie pop"
+      ],
+      [
+       "Robyn",
+       1219,
+       "other"
+      ]
+     ],
+     "key": "zoe"
+    },
+    {
+     "name": "Jordan Lee",
+     "country": "United States",
+     "genres": [
+      [
+       "pop",
+       0.819
+      ],
+      [
+       "pop punk",
+       0.121
+      ],
+      [
+       "rock",
+       0.041
+      ],
+      [
+       "punk rock",
+       0.013
+      ],
+      [
+       "nu metal",
+       0.007
+      ]
+     ],
+     "top_artists": [
+      [
+       "Taylor Swift",
+       58947,
+       "pop"
+      ],
+      [
+       "blink-182",
+       8758,
+       "pop punk"
+      ],
+      [
+       "John Williams",
+       4784,
+       "other"
+      ],
+      [
+       "Goldfinger",
+       4094,
+       "other"
+      ],
+      [
+       "Rush",
+       3774,
+       "other"
+      ]
+     ],
+     "key": "jordan"
+    }
+   ]
+  },
+  {
+   "cluster": 2,
+   "cluster_size": 897,
+   "genre_mix": [
+    [
+     "hip hop",
+     0.666
+    ],
+    [
+     "contemporary r&b",
+     0.039
+    ],
+    [
+     "pop",
+     0.028
+    ],
+    [
+     "experimental hip hop",
+     0.025
+    ],
+    [
+     "r&b",
+     0.025
+    ],
+    [
+     "cloud rap",
+     0.02
+    ],
+    [
+     "indie rock",
+     0.019
+    ],
+    [
+     "alternative rock",
+     0.018
+    ],
+    [
+     "trap",
+     0.015
+    ],
+    [
+     "rage",
+     0.013
+    ]
+   ],
+   "members": [
+    {
+     "name": "Nina Patel",
+     "country": "United States",
+     "genres": [
+      [
+       "hip hop",
+       0.553
+      ],
+      [
+       "pop",
+       0.24
+      ],
+      [
+       "blues rock",
+       0.077
+      ],
+      [
+       "alternative rock",
+       0.051
+      ],
+      [
+       "singer-songwriter",
+       0.026
+      ]
+     ],
+     "top_artists": [
+      [
+       "Kanye West",
+       1450,
+       "hip hop"
+      ],
+      [
+       "Ariana Grande",
+       639,
+       "pop"
+      ],
+      [
+       "Frank Sinatra",
+       503,
+       "other"
+      ],
+      [
+       "Kendrick Lamar",
+       482,
+       "hip hop"
+      ],
+      [
+       "Drake",
+       362,
+       "hip hop"
+      ]
+     ],
+     "key": "nina"
+    },
+    {
+     "name": "Marcus Bell",
+     "country": "United States",
+     "genres": [
+      [
+       "hip hop",
+       0.49
+      ],
+      [
+       "alternative rock",
+       0.088
+      ],
+      [
+       "rage",
+       0.042
+      ],
+      [
+       "r&b",
+       0.037
+      ],
+      [
+       "art rock",
+       0.035
+      ]
+     ],
+     "top_artists": [
+      [
+       "Playboi Carti",
+       1749,
+       "hip hop"
+      ],
+      [
+       "Future",
+       1163,
+       "hip hop"
+      ],
+      [
+       "Kanye West",
+       1095,
+       "hip hop"
+      ],
+      [
+       "Drake",
+       1000,
+       "hip hop"
+      ],
+      [
+       "Destroy Lonely",
+       988,
+       "hip hop"
+      ]
+     ],
+     "key": "marcus"
+    },
+    {
+     "name": "Noah Grant",
+     "country": "United States",
+     "genres": [
+      [
+       "hip hop",
+       0.735
+      ],
+      [
+       "contemporary r&b",
+       0.089
+      ],
+      [
+       "alternative rock",
+       0.043
+      ],
+      [
+       "r&b",
+       0.033
+      ],
+      [
+       "pop rap",
+       0.02
+      ]
+     ],
+     "top_artists": [
+      [
+       "Kanye West",
+       7026,
+       "hip hop"
+      ],
+      [
+       "Kendrick Lamar",
+       6255,
+       "hip hop"
+      ],
+      [
+       "Kid Cudi",
+       5269,
+       "hip hop"
+      ],
+      [
+       "Mac Miller",
+       5062,
+       "hip hop"
+      ],
+      [
+       "A$AP Rocky",
+       4640,
+       "hip hop"
+      ]
+     ],
+     "key": "noah"
+    },
+    {
+     "name": "Priya Shah",
+     "country": "United States",
+     "genres": [
+      [
+       "hip hop",
+       0.625
+      ],
+      [
+       "experimental hip hop",
+       0.097
+      ],
+      [
+       "r&b",
+       0.064
+      ],
+      [
+       "alternative rock",
+       0.05
+      ],
+      [
+       "pop",
+       0.029
+      ]
+     ],
+     "top_artists": [
+      [
+       "Kanye West",
+       3706,
+       "hip hop"
+      ],
+      [
+       "JPEGMAFIA",
+       2222,
+       "experimental hip hop"
+      ],
+      [
+       "Kendrick Lamar",
+       2175,
+       "hip hop"
+      ],
+      [
+       "The Weeknd",
+       1838,
+       "r&b"
+      ],
+      [
+       "Travi$ Scott",
+       1656,
+       "hip hop"
+      ]
+     ],
+     "key": "priya"
+    },
+    {
+     "name": "Isaac Fox",
+     "country": "United States",
+     "genres": [
+      [
+       "hip hop",
+       0.793
+      ],
+      [
+       "pop rap",
+       0.034
+      ],
+      [
+       "cloud rap",
+       0.034
+      ],
+      [
+       "grunge",
+       0.025
+      ],
+      [
+       "electronic",
+       0.023
+      ]
+     ],
+     "top_artists": [
+      [
+       "Kanye West",
+       8915,
+       "hip hop"
+      ],
+      [
+       "Playboi Carti",
+       6624,
+       "hip hop"
+      ],
+      [
+       "Drake",
+       4863,
+       "hip hop"
+      ],
+      [
+       "Travi$ Scott",
+       3937,
+       "hip hop"
+      ],
+      [
+       "Lil Uzi Vert",
+       2996,
+       "hip hop"
+      ]
+     ],
+     "key": "isaac"
+    }
+   ]
+  },
+  {
+   "cluster": 6,
+   "cluster_size": 581,
+   "genre_mix": [
+    [
+     "k-pop",
+     0.642
+    ],
+    [
+     "pop",
+     0.112
+    ],
+    [
+     "hip hop",
+     0.046
+    ],
+    [
+     "indie pop",
+     0.025
+    ],
+    [
+     "indie rock",
+     0.022
+    ],
+    [
+     "electropop",
+     0.02
+    ],
+    [
+     "contemporary r&b",
+     0.013
+    ],
+    [
+     "r&b",
+     0.013
+    ],
+    [
+     "alternative rock",
+     0.011
+    ],
+    [
+     "pop punk",
+     0.011
+    ]
+   ],
+   "members": [
+    {
+     "name": "Ethan Brooks",
+     "country": "United States",
+     "genres": [
+      [
+       "k-pop",
+       0.546
+      ],
+      [
+       "pop",
+       0.192
+      ],
+      [
+       "indie rock",
+       0.126
+      ],
+      [
+       "indie pop",
+       0.073
+      ],
+      [
+       "electropop",
+       0.018
+      ]
+     ],
+     "top_artists": [
+      [
+       "Red Velvet",
+       31899,
+       "k-pop"
+      ],
+      [
+       "Mitski",
+       12379,
+       "indie rock"
+      ],
+      [
+       "TWICE",
+       11902,
+       "k-pop"
+      ],
+      [
+       "Lorde",
+       7884,
+       "pop"
+      ],
+      [
+       "Lana Del Rey",
+       5497,
+       "indie pop"
+      ]
+     ],
+     "key": "ethan"
+    },
+    {
+     "name": "Diego Morales",
+     "country": "United States",
+     "genres": [
+      [
+       "k-pop",
+       0.751
+      ],
+      [
+       "pop",
+       0.171
+      ],
+      [
+       "uk garage",
+       0.021
+      ],
+      [
+       "indie pop",
+       0.016
+      ],
+      [
+       "jazz pop",
+       0.016
+      ]
+     ],
+     "top_artists": [
+      [
+       "TWICE",
+       13193,
+       "k-pop"
+      ],
+      [
+       "LE SSERAFIM",
+       4116,
+       "k-pop"
+      ],
+      [
+       "Ariana Grande",
+       3382,
+       "pop"
+      ],
+      [
+       "NAYEON",
+       3074,
+       "other"
+      ],
+      [
+       "Stay-C",
+       2654,
+       "other"
+      ]
+     ],
+     "key": "diego"
+    },
+    {
+     "name": "Owen Hart",
+     "country": "United States",
+     "genres": [
+      [
+       "k-pop",
+       0.543
+      ],
+      [
+       "pop punk",
+       0.211
+      ],
+      [
+       "post-hardcore",
+       0.098
+      ],
+      [
+       "pop rock",
+       0.037
+      ],
+      [
+       "pop",
+       0.037
+      ]
+     ],
+     "top_artists": [
+      [
+       "ATEEZ",
+       56927,
+       "k-pop"
+      ],
+      [
+       "My Chemical Romance",
+       35751,
+       "pop punk"
+      ],
+      [
+       "BOYNEXTDOOR",
+       22488,
+       "other"
+      ],
+      [
+       "Pierce the Veil",
+       17605,
+       "post-hardcore"
+      ],
+      [
+       "Waterparks",
+       15884,
+       "other"
+      ]
+     ],
+     "key": "owen"
+    },
+    {
+     "name": "Hannah Cole",
+     "country": "United States",
+     "genres": [
+      [
+       "k-pop",
+       0.819
+      ],
+      [
+       "hip hop",
+       0.08
+      ],
+      [
+       "alternative metal",
+       0.032
+      ],
+      [
+       "industrial metal",
+       0.021
+      ],
+      [
+       "trap",
+       0.019
+      ]
+     ],
+     "top_artists": [
+      [
+       "ENHYPEN",
+       15863,
+       "k-pop"
+      ],
+      [
+       "ATEEZ",
+       4180,
+       "k-pop"
+      ],
+      [
+       "Stray Kids",
+       4052,
+       "k-pop"
+      ],
+      [
+       "TOMORROW X TOGETHER",
+       3236,
+       "k-pop"
+      ],
+      [
+       "$uicideboy$",
+       2255,
+       "hip hop"
+      ]
+     ],
+     "key": "hannah"
+    },
+    {
+     "name": "Lucy Moreno",
+     "country": "United States",
+     "genres": [
+      [
+       "k-pop",
+       0.37
+      ],
+      [
+       "hip hop",
+       0.231
+      ],
+      [
+       "pop",
+       0.22
+      ],
+      [
+       "r&b",
+       0.046
+      ],
+      [
+       "reggaeton",
+       0.034
+      ]
+     ],
+     "top_artists": [
+      [
+       "BLACKPINK",
+       8054,
+       "k-pop"
+      ],
+      [
+       "Doja Cat",
+       7007,
+       "hip hop"
+      ],
+      [
+       "Red Velvet",
+       2840,
+       "k-pop"
+      ],
+      [
+       "BTS",
+       2045,
+       "k-pop"
+      ],
+      [
+       "Ariana Grande",
+       1689,
+       "pop"
+      ]
+     ],
+     "key": "lucy"
+    }
+   ]
+  }
+ ]
+}

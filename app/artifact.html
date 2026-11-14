@@ -1,0 +1,1001 @@
+<title>JamVibe</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<style>
+/* Layout: one phone-width column (390px target), centered on desktop; screens scroll above a fixed bottom nav. */
+:root {
+  --bg: #14131C; --card: #1E1D29; --line: #2C2B3A; --fg: #F4F1EC; --muted: #A7A3B5; --accent: #FF8A4C;
+  --accent-ink: #14131C; --raise: #262534; --good: #5FD3B4;
+  --font: ui-rounded, "SF Pro Rounded", "Nunito", "Varela Round", system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+  --mono: ui-monospace, "SF Mono", Menlo, Consolas, monospace;
+  --r: 18px; --nav-h: 64px;
+  color-scheme: dark;
+}
+* { box-sizing: border-box; }
+html, body { height: 100%; }
+body { margin: 0; background: var(--bg); color: var(--fg); font: 15px/1.45 var(--font); -webkit-font-smoothing: antialiased; }
+button, input, select { font: inherit; color: inherit; }
+button { cursor: pointer; }
+:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+.app { max-width: 430px; margin: 0 auto; min-height: 100%; position: relative;
+  padding-left: max(16px, env(safe-area-inset-left, 0px)); padding-right: max(16px, env(safe-area-inset-right, 0px));
+  padding-block: 12px calc(var(--nav-h) + 28px + env(safe-area-inset-bottom, 0px)); }
+@media (min-width: 560px) { body { background: #0E0D14; } .app { background: var(--bg); border-inline: 1px solid var(--line); } }
+h1, h2, h3 { margin: 0; font-weight: 800; letter-spacing: -0.01em; line-height: 1.15; text-wrap: balance; }
+h1 { font-size: 26px; } h2 { font-size: 19px; } h3 { font-size: 15px; font-weight: 700; }
+p { margin: 0; }
+.muted { color: var(--muted); }
+.small { font-size: 13px; }
+.num { font-family: var(--mono); font-variant-numeric: tabular-nums; }
+.stack { display: grid; gap: 14px; }
+.row { display: flex; align-items: center; gap: 10px; min-width: 0; }
+.between { justify-content: space-between; }
+.wrap { flex-wrap: wrap; }
+.grow { flex: 1; min-width: 0; }
+
+/* Top bar */
+.top { display: flex; align-items: center; justify-content: space-between; gap: 10px; padding-block: 6px 14px; }
+.brand { font-weight: 900; font-size: 20px; letter-spacing: -0.02em; }
+.brand b { color: var(--accent); }
+.switcher { display: inline-flex; align-items: center; gap: 6px; background: var(--card); border: 1px solid var(--line); border-radius: 999px; padding: 7px 12px; font-weight: 700; max-width: 62%; }
+.switcher span { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.back { background: none; border: 0; padding: 6px 0; color: var(--muted); font-weight: 700; display: inline-flex; gap: 4px; align-items: center; }
+
+/* Cards and pieces */
+.card { background: var(--card); border: 1px solid var(--line); border-radius: var(--r); padding: 16px; display: grid; gap: 12px; min-width: 0; }
+.card.hot { border-color: var(--accent); }
+.eyebrow { font-size: 11px; font-weight: 800; letter-spacing: 0.08em; text-transform: uppercase; color: var(--muted); }
+.sim { display: inline-flex; align-items: center; gap: 6px; font-size: 12px; font-weight: 700; color: var(--accent); background: #FF8A4C1A; border-radius: 999px; padding: 4px 10px; justify-self: start; }
+.real { color: var(--good); background: #5FD3B41A; }
+.btn { border: 0; border-radius: 14px; padding: 12px 16px; font-weight: 800; background: var(--accent); color: var(--accent-ink); }
+.btn.ghost { background: var(--raise); color: var(--fg); border: 1px solid var(--line); }
+.btn.small { padding: 8px 12px; font-size: 13px; border-radius: 12px; }
+.btn:disabled { opacity: 0.45; cursor: not-allowed; }
+.link { background: none; border: 0; padding: 0; color: var(--accent); font-weight: 700; }
+.seg { display: grid; grid-auto-flow: column; grid-auto-columns: 1fr; background: var(--card); border: 1px solid var(--line); border-radius: 14px; padding: 4px; gap: 4px; }
+.seg button { border: 0; background: none; border-radius: 10px; padding: 8px 6px; font-weight: 700; color: var(--muted); font-size: 13px; }
+.seg button[aria-pressed="true"] { background: var(--raise); color: var(--fg); }
+.field { display: grid; gap: 6px; font-size: 13px; font-weight: 700; color: var(--muted); }
+.input, select.input { width: 100%; background: var(--raise); border: 1px solid var(--line); border-radius: 12px; padding: 11px 12px; color: var(--fg); font-weight: 600; }
+.bar { height: 8px; background: var(--raise); border-radius: 999px; overflow: hidden; }
+.bar i { display: block; height: 100%; background: var(--accent); border-radius: 999px; }
+.av { --c: var(--accent); width: 34px; height: 34px; border-radius: 50%; background: var(--c); color: var(--accent-ink); display: inline-grid; place-items: center; font-weight: 900; font-size: 14px; flex: none; }
+.av.sm { width: 26px; height: 26px; font-size: 11px; }
+.av.lg { width: 48px; height: 48px; font-size: 19px; }
+.avs { display: flex; }
+.avs .av { border: 2px solid var(--bg); margin-left: -8px; }
+.avs .av:first-child { margin-left: 0; }
+.members { display: flex; flex-wrap: wrap; gap: 12px; }
+.member { display: grid; justify-items: center; gap: 4px; font-size: 12px; color: var(--muted); width: 52px; text-align: center; }
+.list { display: grid; gap: 2px; }
+.li { display: flex; align-items: center; gap: 10px; padding: 9px 0; border-bottom: 1px solid var(--line); min-width: 0; }
+.li:last-child { border-bottom: 0; }
+.rank { width: 22px; font-weight: 800; color: var(--muted); text-align: center; flex: none; }
+.name { font-weight: 700; overflow-wrap: anywhere; }
+.crown { width: 18px; height: 18px; color: #F2C14E; flex: none; }
+.pill { font-size: 12px; font-weight: 700; padding: 3px 9px; border-radius: 999px; background: var(--raise); color: var(--muted); white-space: nowrap; }
+.pill.new { background: var(--accent); color: var(--accent-ink); }
+.alert { display: flex; gap: 10px; align-items: flex-start; }
+.alert p { font-weight: 600; }
+.big { font-size: 40px; font-weight: 900; line-height: 1; letter-spacing: -0.03em; }
+.chips { display: flex; flex-wrap: wrap; gap: 6px; }
+.chip { border: 1px solid var(--line); background: var(--raise); border-radius: 999px; padding: 6px 11px; font-size: 13px; font-weight: 700; color: var(--fg); }
+.chip[aria-pressed="true"] { background: var(--accent); color: var(--accent-ink); border-color: var(--accent); }
+.scroll-list { max-height: 260px; overflow-y: auto; display: grid; gap: 6px; padding-right: 2px; }
+.artist-btn { display: flex; justify-content: space-between; gap: 10px; text-align: left; border: 1px solid var(--line); background: var(--raise); border-radius: 12px; padding: 9px 12px; font-weight: 700; }
+.artist-btn[aria-pressed="true"] { border-color: var(--accent); }
+.two { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+.two > * { min-width: 0; }
+.ring { --p: 50; width: 120px; height: 120px; border-radius: 50%; display: grid; place-items: center; margin: 4px auto;
+  background: conic-gradient(var(--accent) calc(var(--p) * 1%), var(--raise) 0); }
+.ring div { width: 96px; height: 96px; border-radius: 50%; background: var(--card); display: grid; place-items: center; font-size: 28px; font-weight: 900; }
+.award { display: grid; grid-template-columns: auto 1fr; gap: 12px; align-items: center; }
+.share-preview { width: 100%; max-width: 270px; aspect-ratio: 9 / 16; height: auto; border-radius: 18px; border: 1px solid var(--line); display: block; margin: 0 auto; background: var(--bg); }
+.note { font-size: 13px; color: var(--muted); background: var(--raise); border-radius: 12px; padding: 10px 12px; }
+.empty { text-align: center; color: var(--muted); padding: 18px 8px; }
+
+/* Bottom nav */
+.nav { position: fixed; bottom: 0; left: 50%; transform: translateX(-50%); width: min(100%, 430px); z-index: 5;
+  background: #14131CF2; border-top: 1px solid var(--line); display: grid; grid-template-columns: repeat(5, 1fr);
+  padding: 6px max(8px, env(safe-area-inset-left, 0px)) calc(6px + env(safe-area-inset-bottom, 0px)); backdrop-filter: blur(10px); }
+.nav button { border: 0; background: none; display: grid; justify-items: center; gap: 2px; padding: 6px 0; color: var(--muted); font-size: 11px; font-weight: 700; border-radius: 12px; }
+.nav button[aria-current="page"] { color: var(--accent); }
+.nav svg { width: 22px; height: 22px; }
+.ico { width: 18px; height: 18px; flex: none; }
+
+/* Sheet and toast */
+.sheet-backdrop { position: fixed; inset: 0; background: #0009; z-index: 10; display: grid; align-items: end; justify-items: center; }
+.sheet { width: min(100%, 430px); background: var(--card); border: 1px solid var(--line); border-bottom: 0; border-radius: 22px 22px 0 0;
+  padding: 18px max(16px, env(safe-area-inset-left, 0px)) calc(20px + env(safe-area-inset-bottom, 0px)); display: grid; gap: 10px; }
+.sheet .li { padding: 12px 0; }
+.sheet .li button { all: unset; cursor: pointer; display: flex; gap: 10px; align-items: center; width: 100%; font-weight: 700; }
+#toast { position: fixed; left: 50%; transform: translateX(-50%); bottom: calc(var(--nav-h) + 22px + env(safe-area-inset-bottom, 0px)); z-index: 20;
+  background: var(--fg); color: var(--bg); padding: 10px 16px; border-radius: 999px; font-weight: 700; font-size: 14px; max-width: calc(100% - 32px); text-align: center; }
+@media (prefers-reduced-motion: no-preference) { .card.hot { animation: pop 0.5s ease-out; } @keyframes pop { from { transform: scale(0.98); } to { transform: none; } } }
+</style>
+
+<div class="app">
+  <header class="top" id="top"></header>
+  <main id="screen" tabindex="-1"></main>
+</div>
+<nav class="nav" id="nav" aria-label="Main"></nav>
+<div id="sheet" hidden></div>
+<div id="toast" role="status" aria-live="polite" hidden></div>
+
+<script>
+"use strict";
+/* =====================================================================================
+   EDIT HERE: CONFIG + TEXT. Names, colors, groups, join codes, challenges, awards and
+   every message shown in the app live in this section. App logic is further down.
+   ===================================================================================== */
+const CONFIG = {
+  appName: "JamVibe",
+  viewer: "grace",                       // the person the demo is "logged in" as
+
+  // Invented first names (never real user IDs) and one avatar color each, kept across every screen.
+  people: {
+    grace:  { name: "Grace",  color: "#FF8A4C" },
+    eli:    { name: "Eli",    color: "#7FB2FF" },
+    leila:  { name: "Leila",  color: "#F2C14E" },
+    sofia:  { name: "Sofia",  color: "#C792EA" },
+    chloe:  { name: "Chloe",  color: "#5FD3B4" },
+    zoe:    { name: "Zoe",    color: "#FF6F91" },
+    jordan: { name: "Jordan", color: "#B8E986" },
+    nina:   { name: "Nina",   color: "#7FB2FF" },
+    marcus: { name: "Marcus", color: "#F2C14E" },
+    noah:   { name: "Noah",   color: "#C792EA" },
+    priya:  { name: "Priya",  color: "#5FD3B4" },
+    isaac:  { name: "Isaac",  color: "#FF6F91" },
+    ethan:  { name: "Ethan",  color: "#7FB2FF" },
+    diego:  { name: "Diego",  color: "#F2C14E" },
+    owen:   { name: "Owen",   color: "#C792EA" },
+    hannah: { name: "Hannah", color: "#5FD3B4" },
+    lucy:   { name: "Lucy",   color: "#B8E986" },
+  },
+
+  // Groups. Members come from the data pipeline; extraMembers adds the viewer to groups she joined.
+  groups: {
+    pop:    { name: "Mostly Pop",     code: "POPCLUB", extraMembers: [] },
+    hiphop: { name: "Mostly Hip Hop", code: "BARS",    extraMembers: ["grace"] },
+    kpop:   { name: "Mostly K-Pop",   code: "ROOMIES", extraMembers: ["grace"] },
+  },
+  startJoined: ["pop", "hiphop"],        // groups the viewer is already in; others are joined with their code
+
+  // Simulated months. The dataset has no dates, so monthly plays are generated from each person's real play shares.
+  sim: {
+    seed: 2026,
+    months: [
+      { label: "September 2026", short: "Sep", year: 2026, month: 9 },
+      { label: "October 2026",   short: "Oct", year: 2026, month: 10 },
+      { label: "November 2026",  short: "Nov", year: 2026, month: 11 },
+    ],
+    thisMonth: 2, lastMonth: 1,          // indexes into months
+    startDay: 18,                        // "Day 18 of 30" when the demo opens
+    medianMonthlyPlays: 1000, spread: 0.35, minPlays: 400, maxPlays: 2200, monthToMonth: 0.15, weekendBoost: 1.25,
+    alertArtists: 12,                    // rank-change alerts watch each group's top N artists
+    alertMinPlays: 5,                    // ignore passes below this many plays (too early in the month to matter)
+  },
+
+  // Challenges each group starts with (max two active on the free plan). Targets are plays this month.
+  challenges: {
+    pop: [
+      { type: "duel",  a: "grace", b: "sofia", artist: "Taylor Swift", stakes: "Loser builds the next group playlist" },
+      { type: "goal",  artist: "Lady Gaga", target: 900, stakes: "Karaoke night if we hit it" },
+    ],
+    hiphop: [
+      { type: "duel",      a: "isaac", b: "noah", artist: "Kanye West", stakes: "Loser buys the concert tickets" },
+      { type: "recommend", a: "grace", b: "nina", artist: "Ariana Grande", target: 15, stakes: "Nina picks Grace's next album" },
+    ],
+    kpop: [],
+  },
+  freeChallengeLimit: 2,
+
+  // Group awards in Recap. {name}, {pct}, {artist}, {genre}, {count} are filled in.
+  awards: [
+    { id: "loyal",    title: "Most loyal",     text: "{name} gave {pct} of their plays to {artist}." },
+    { id: "hopper",   title: "Genre hopper",   text: "{name} played {count} different genres." },
+    { id: "deepcuts", title: "Deep cuts",      text: "{pct} of {name}'s plays went to artists nobody else here plays." },
+    { id: "purist",   title: "{Genre} purist", text: "{pct} of {name}'s plays were {genre}." },
+  ],
+};
+
+const TEXT = {
+  // Navigation
+  navHome: "Home", navRank: "Rank", navMatch: "Match", navChallenges: "Challenges", navRecap: "Recap",
+  back: "Back",
+  // Labels
+  simLabel: "Simulated month · example numbers",
+  realLabel: "Real all-time numbers",
+  plays: "{n} plays", playsOne: "1 play",
+  you: "You", youLower: "you",
+  thisMonth: "This month", lastMonth: "Last month", allTime: "All time",
+  // Home
+  homeMembers: "{n} members",
+  raceDay: "Day {day} of {days}", resultsIn: "results in {n} days", resultsTomorrow: "results tomorrow", resultsToday: "results today",
+  raceTitle: "{month} race",
+  simulateDay: "Simulate a day", monthDone: "Month complete", resetMonth: "Back to day {day}",
+  latestAlert: "Latest alert", earlierAlerts: "Earlier", noAlerts: "No rank changes yet this month.",
+  noAlertsToday: "Day {day}: no rank changes today.", newAlert: "New",
+  alertPassed: "{x} just passed {y} as #{rank} for {artist}.",
+  alertCrown: "{x} just took #1 for {artist} from {y}.",
+  alertDay: "Day {day}",
+  closestRace: "Closest race", closestRaceText: "{leader} leads {chaser} by {gap} for {artist}.", closestRaceTextYou: "You lead {chaser} by {gap} for {artist}.",
+  closestRaceTied: "{leader} and {chaser} are tied for {artist}.", noRace: "No close races yet.",
+  groupSound: "Group Sound", groupSoundSub: "Top genres, with every member weighted equally", leansHardest: "{name} leans hardest ({pct})", leansHardestYou: "You lean hardest ({pct})",
+  compareGroups: "Compare with another group",
+  resetDemo: "Reset demo",
+  // Group switcher and join
+  yourGroups: "Your groups", joinGroup: "Join a group", joinTitle: "Join a group",
+  joinHelp: "Enter the code a friend shared. Free plan: join as many groups as you like.",
+  joinPlaceholder: "Group code, e.g. ROOMIES", joinButton: "Join",
+  joinOk: "You joined {group}.", joinAlready: "You're already in {group}.", joinBad: "No group uses the code \"{code}\". Check the spelling and try again.",
+  joinEmpty: "Type a group code first.",
+  // Rank
+  rankTitle: "Leaderboards", searchArtists: "Search artists", noArtists: "No artist matches \"{q}\".",
+  fromFirst: "{n} from #1", tiedFirst: "tied for #1",
+  youAreFirst: "You're #1 for {artist}.", youAreBehind: "You're #{rank}, {n} from #1 for {artist}.", youNoPlays: "You haven't played {artist} yet.",
+  // Match
+  matchTitle: "Compatibility", matchSub: "Cosine similarity of real all-time top-50 artist plays",
+  matchTiers: [[70, "Musical soulmates"], [45, "Great overlap"], [25, "Some common ground"], [0, "Opposites attract"]],
+  sharedArtists: "Shared artists", noShared: "No artists in common. Time for a recommendation.",
+  twins: "Musical twins", opposites: "Musical opposites", pickTwo: "Pick two different people.",
+  // Challenges
+  challengesTitle: "Challenges", activeChallenges: "Active challenges ({n} of {max})", noChallenges: "No active challenges. Start one.",
+  newChallenge: "New challenge", createChallenge: "Start challenge", cancel: "Cancel", endChallenge: "End",
+  challengeLimit: "The free plan allows two challenges at a time. End one to start another.",
+  challengeCreated: "Challenge started.", challengeEnded: "Challenge ended.",
+  typeDuel: "Biggest fan duel", typeRecommend: "Recommend and convert", typeGoal: "Group goal",
+  duelTitle: "{a} vs {b} · {artist}", duelLead: "{name} leads by {n}", duelLeadYou: "You lead by {n}", duelTied: "All tied",
+  recommendTitle: "{a} recommends {artist} to {b}", recommendTitleYou: "You recommend {artist} to {b}", recommendProgress: "{b}: {n} of {target} plays", recommendDone: "{b} converted!",
+  goalTitle: "{target} plays of {artist}", goalProgress: "{n} of {target} plays", goalDone: "Goal reached!",
+  daysLeft: "{n} days left", oneDayLeft: "1 day left", lastDay: "Last day",
+  stakes: "Stakes: {stakes}",
+  fieldType: "Type", fieldYou: "You", fieldOpponent: "Opponent", fieldFriend: "Friend", fieldArtist: "Artist", fieldTarget: "Target plays", fieldStakes: "Stakes",
+  defaultStakes: "Bragging rights",
+  // Recap
+  recapTitle: "{month} recap", recapSoFar: "{month} so far",
+  topArtist: "Top artist", topGenre: "Top genre", totalPlays: "Group plays", biggestFan: "Biggest fan",
+  biggestFanText: "{name}, {n} of {artist}",
+  awardsTitle: "Group awards", rankChanges: "Biggest rank changes", noRankChanges: "No rank changes vs. {month}.",
+  climbed: "{name} climbed from #{from} to #{to} for {artist}", slipped: "{name} slipped from #{from} to #{to} for {artist}",
+  makeShareCard: "Make my share card",
+  // Share card
+  shareTitle: "Share card", shareArtist: "Artist", shareLead: "I'm the", shareTail: "fan in {group}",
+  sharePlays: "{n} plays in {month}", shareNoPlays: "Play an artist this month to make a card.",
+  saveImage: "Save image", saved: "Image saved.", saveDeclined: "Save cancelled.", saveFailed: "Couldn't save the image here. Try the standalone file.",
+  // Compare
+  compareTitle: "Group vs. group", signatureArtist: "Signature artist", sharedBetween: "Shared artists",
+  noSharedGroups: "These groups have no artists in common.", needTwoGroups: "Join another group to compare.",
+  // Misc
+  genreOther: "other",
+};
+
+/* =====================================================================================
+   GENERATED DATA: real all-time top-50 artists per person, group membership and genres.
+   ===================================================================================== */
+/* <generated-data> do not edit by hand: python3 app/build_app.py rewrites this block */
+const DATA = {"source":"Last.fm public dataset (anonymous listeners); genres from MusicBrainz","people":{"eli":{"top50":[["Lady Gaga",15213],["Taylor Swift",7370],["Charli xcx",4553],["Lizzo",3531],["Sabrina Carpenter",3429],["Ariana Grande",2810],["Beyoncé",2610],["Megan Thee Stallion",2461],["Dua Lipa",1960],["Marina & the Diamonds",1662],["Britney Spears",1659],["Joan",1573],["Lana Del Rey",1567],["Chappell Roan",1563],["Kim Petras",1486],["Kacey Musgraves",1333],["Olivia Rodrigo",1305],["Miley Cyrus",1232],["Doja Cat",1009],["Glee Cast",1006],["Troye Sivan",963],["RuPaul",942],["Ke$ha",832],["Hannah Montana",793],["Carly Rae Jepsen",775],["Marina",747],["Nicki Minaj",722],["Iggy Azalea",618],["Harry Styles",617],["Ralph",596],["The 1975",595],["Katy Perry",585],["Meghan Trainor",582],["Rihanna",574],["SZA",556],["Lorde",553],["Saweetie",503],["One Direction",501],["Adele",480],["Addison Rae",479],["Reneé Rapp",453],["Justin Bieber",442],["The Killers",440],["Drake",434],["Baby Queen",421],["Sam Smith",407],["Demi Lovato",403],["Tate McRae",401],["The Pussycat Dolls",398],["Jonas Brothers",397]],"allTimePlays":117165,"otherShare":0.347},"leila":{"top50":[["Lady Gaga",7170],["Ke$ha",2583],["La Roux",1016],["The Sounds",698],["The Knife",615],["Britney Spears",614],["Lights",564],["Lily Allen",555],["Millionaires",496],["Natalia Kills",478],["Tove Lo",393],["Charli xcx",392],["Miley Cyrus",328],["Kat Dahlia",289],["Kanye West",268],["Krewella",268],["Frankmusik",249],["Katy Perry",243],["Lana Del Rey",231],["Kid Cudi",224],["Lorde",223],["Sleigh Bells",223],["Rihanna",209],["Iggy Azalea",203],["No Doubt",198],["Cults",195],["Gwen Stefani",194],["Sky Ferreira",192],["Christina Aguilera",185],["Kat Graham",179],["AlunaGeorge",165],["Adore Delano",162],["Ariana Grande",142],["ScHoolboy Q",142],["Grimes",132],["Yung Lean",131],["Olly Murs",127],["Marina & the Diamonds",122],["Conor Maynard",120],["Ellie Goulding",120],["Dance With the Dead",113],["Drake",110],["Crystal Castles",108],["Mac Miller",106],["CHVRCHES",104],["Dev",99],["Nicki Minaj",99],["J. Cole",97],["Icona Pop",94],["The Cataracs",92]],"allTimePlays":26015,"otherShare":0.152},"sofia":{"top50":[["Taylor Swift",16245],["Ariana Grande",4735],["Peso Pluma",4083],["Paramore",2587],["HAIM",2384],["Zayn",2026],["Lana Del Rey",1994],["Hayley Williams",1842],["Tinashe",1803],["Justin Bieber",1798],["Kacey Musgraves",1796],["Natanael Cano",1576],["Lorde",1342],["Junior H",1208],["Beyoncé",1043],["Clairo",858],["Linea Personal",770],["Fleetwood Mac",769],["Aly & AJ",662],["Tate McRae",640],["Tito Double P",624],["Eslabon Armado",587],["Grimes",581],["Harry Styles",573],["Drake",561],["Gabito Ballesteros",547],["Red Velvet",542],["소녀시대",540],["Neton Vega",535],["Rauw Alejandro",532],["Luis R Conriquez",509],["Tyla",505],["Julieta Venegas",504],["Miley Cyrus",488],["Bridgit Mendler",478],["Selena Gomez",472],["Dua Lipa",449],["Summer Walker",447],["Florence + the Machine",416],["Bad Bunny",409],["Myriam Fares",400],["Joni Mitchell",399],["Doja Cat",396],["Faye Webster",382],["Oscar Maydon",381],["Stevie Nicks",378],["Kendrick Lamar",361],["Shakira",359],["Rihanna",358],["Bizarrap",356]],"allTimePlays":111902,"otherShare":0.426},"chloe":{"top50":[["Ellie Goulding",2230],["Dua Lipa",2078],["Lady Gaga",1529],["Azealia Banks",1505],["Florence + the Machine",1255],["Calvin Harris",1118],["M.I.A.",762],["Rihanna",661],["Goldfrapp",655],["Lana Del Rey",615],["RuPaul",564],["Adele",523],["Annalisa",519],["Katy B",502],["Ava Max",484],["Beyoncé",430],["Rachel Stevens",429],["Kylie Minogue",396],["Tate McRae",395],["Katy Perry",392],["Carly Rae Jepsen",381],["Santigold",370],["Britney Spears",356],["Taylor Swift",355],["CHVRCHES",349],["Bambie Thug",342],["Sophie Ellis-Bextor",336],["David Guetta",335],["Ariana Grande",333],["V V Brown",328],["BANKS",321],["Sabrina Carpenter",315],["Danna Paola",313],["La Roux",308],["Gymnastics",300],["Zara Larsson",295],["Marina & the Diamonds",282],["Miley Cyrus",282],["Shakira",280],["Eleni Foureira",278],["DUDA BEAT",269],["Charli xcx",262],["Jessica Simpson",262],["Yeah Yeah Yeahs",261],["Sertab Erener",260],["Lorde",252],["Madison Beer",252],["Chappell Roan",249],["Selena Gomez",248],["Kaleen",245]],"allTimePlays":63747,"otherShare":0.5},"grace":{"top50":[["Lady Gaga",3871],["Taylor Swift",3063],["Ariana Grande",2666],["Dua Lipa",2612],["Kylie Minogue",2326],["Ava Max",2214],["Ellie Goulding",2015],["Little Mix",1973],["Miley Cyrus",1913],["Katy Perry",1724],["Carly Rae Jepsen",1711],["CHVRCHES",1517],["Charli xcx",1508],["Marina",1498],["Paramore",1479],["Billie Eilish",1436],["Britney Spears",1423],["Sabrina Carpenter",1376],["Bastille",1308],["Allie X",1228],["BANKS",1224],["Mariah Carey",1215],["Tinashe",1064],["Rina Sawayama",1054],["Foxes",935],["Beyoncé",795],["Years & Years",771],["Tove Lo",769],["HAIM",755],["Halsey",716],["Lorde",714],["BLACKPINK",703],["The Weeknd",703],["Avril Lavigne",685],["Shania Twain",684],["Tate McRae",682],["Zara Larsson",669],["Doja Cat",634],["Demi Lovato",632],["Bebe Rexha",615],["The Beatles",587],["Imagine Dragons",586],["Madison Beer",584],["ABBA",583],["Kelly Clarkson",565],["Janet Jackson",525],["Madonna",522],["Kesha",508],["Rihanna",504],["Lana Del Rey",497]],"allTimePlays":90346,"otherShare":0.332},"zoe":{"top50":[["Shakira",9489],["Lady Gaga",8773],["Madonna",5518],["Lana Del Rey",1722],["Robyn",1219],["Rihanna",1106],["Britney Spears",1065],["Jennifer Lopez",976],["Kylie Minogue",859],["Beyoncé",763],["La Roux",746],["Sophie Ellis-Bextor",705],["Michael Jackson",644],["Marco Antonio Solís",637],["Christina Aguilera",533],["Adele",484],["Paulina Rubio",431],["Maroon 5",405],["The Killers",385],["Pitbull",360],["Evanescence",328],["Buraka Som Sistema",325],["Wynter Gordon",321],["Katy Perry",318],["Kelis",309],["Kelly Clarkson",285],["Leona Lewis",285],["Nelly Furtado",284],["No Doubt",281],["Coldplay",274],["Miguel Bosé",269],["M.I.A.",257],["Florence + the Machine",247],["Amy Winehouse",244],["Lorde",217],["David Guetta",216],["Justin Timberlake",214],["Mariah Carey",213],["Missy Elliott",206],["Ellie Goulding",198],["Pink",198],["Calvin Harris",196],["La Oreja de Van Gogh",191],["Dead or Alive",188],["Black Eyed Peas",185],["Gwen Stefani",178],["Mika",172],["Belanova",167],["Enrique Iglesias",165],["Moby",162]],"allTimePlays":56041,"otherShare":0.216},"jordan":{"top50":[["Taylor Swift",58947],["blink-182",8758],["John Williams",4784],["Goldfinger",4094],["Rush",3774],["The Beatles",3622],["Kelly Clarkson",3376],["Ariana Grande",2972],["Boston",2961],["Mêlée",2866],["Eagles",2442],["One Direction",2202],["The Corrs",2024],["Avril Lavigne",1952],["Badfinger",1746],["Elton John",1486],["Katy Perry",1438],["Backstreet Boys",1359],["Chicago",1353],["Dua Lipa",1328],["Little River Band",1309],["The Doobie Brothers",1229],["Electric Light Orchestra",1190],["Lady Antebellum",1186],["Supertramp",1165],["Randy Edelman",1146],["Green Day",1144],["\"Weird Al\" Yankovic",1141],["Sum 41",1005],["Maroon 5",899],["Huey Lewis & The News",871],["Shakira",832],["DragonForce",826],["The Cars",817],["Billy Joel",812],["Diamond Rio",694],["Josh Groban",679],["Scorpions",664],["Lynyrd Skynyrd",645],["Van Halen",621],["Alabama",602],["The Moody Blues",602],["The Who",586],["Linkin Park",580],["Steve Miller Band",574],["The Monkees",573],["Patrick Doyle",572],["Maren Morris",550],["Shania Twain",544],["Rihanna",506]],"allTimePlays":185533,"otherShare":0.256},"nina":{"top50":[["Kanye West",1450],["Ariana Grande",639],["Frank Sinatra",503],["Kendrick Lamar",482],["Drake",362],["John Mayer",355],["Chappell Roan",264],["Chance the Rapper",173],["Billy Joel",167],["Coldplay",161],["Megan Thee Stallion",132],["KIDS SEE GHOSTS",130],["Caravan Palace",123],["Phoebe Bridgers",121],["Dwilly",103],["FortYe",98],["¥$, Kanye West & Ty Dolla $ign",96],["Nas",94],["Tyga",87],["Beyoncé",81],["John Williams",81],["Johnny Cash",81],["Beach House",79],["Ella Fitzgerald",75],["Radiohead",75],["YoungBoy Never Broke Again",74],["Nicki Minaj",72],["boygenius",71],["Johann Sebastian Bach",69],["Lin-Manuel Miranda",69],["Rihanna",69],["Dean Martin",68],["Pusha T",64],["Jay Rock",58],["JAY-Z",56],["Rae Sremmurd",56],["Alan Silvestri",55],["Billie Eilish",54],["Taylor Swift",54],["Mac Miller",53],["Sheck Wes",53],["Van McCoy & The Soul City Symphony",53],["6ix9ine",52],["ScHoolboy Q",52],["The Weeknd",52],["Les Misérables-Original London Cast",51],["Fergie",48],["LeviathanJPTV",48],["Migos",48],["Ryan Adams",47]],"allTimePlays":17221,"otherShare":0.5},"marcus":{"top50":[["Playboi Carti",1749],["Future",1163],["Kanye West",1095],["Drake",1000],["Destroy Lonely",988],["Yeat",979],["Radiohead",906],["UnoTheActivist",904],["The Weeknd",859],["David Bowie",832],["Bladee",825],["Lucky Twice",788],["The Beatles",722],["Interpol",702],["Lil Uzi Vert",699],["BROCKHAMPTON",652],["Ken Carson",643],["Summrs",620],["The Cure",606],["Travi$ Scott",592],["beabadoobee",562],["Trippie Redd",562],["Kendrick Lamar",515],["Beach House",503],["Crystal Castles",477],["Chief Keef",465],["PARTYNEXTDOOR",462],["Lancey Foux",458],["Deftones",453],["The Smashing Pumpkins",444],["Pi’erre Bourne",433],["Young Thug",430],["A$AP Rocky",428],["SICKBOYRARI",424],["Juice WRLD",420],["Mac Miller",419],["My Chemical Romance",415],["Thaiboy Digital",409],["Autumn!",405],["The Smiths",393],["Dominic Fike",378],["$uicideboy$",370],["Coldplay",370],["Pixies",350],["Homixide Gang",347],["Tyler, The Creator",345],["NAV",338],["Led Zeppelin",335],["Don Toliver",333],["SahBabii",329]],"allTimePlays":149784,"otherShare":0.5},"noah":{"top50":[["Kanye West",7026],["Kendrick Lamar",6255],["Kid Cudi",5269],["Mac Miller",5062],["A$AP Rocky",4640],["Frank Ocean",4563],["Travi$ Scott",4143],["J. Cole",3907],["Lupe Fiasco",3573],["Joey Bada$$",3311],["Tyler, The Creator",3029],["Logic",2991],["Drake",2361],["Playboi Carti",2292],["Radiohead",2211],["Denzel Curry",2109],["Isaiah Rashad",1948],["Earl Sweatshirt",1615],["SZA",1573],["Childish Gambino",1562],["OutKast",1527],["The Weeknd",1420],["JAY-Z",1399],["JID",1396],["Daniel Caesar",1379],["Vince Staples",1328],["Tame Impala",1251],["Saba",1103],["Baby Keem",959],["Chance the Rapper",940],["Kali Uchis",849],["Freddie Gibbs & Madlib",819],["Future",800],["A Tribe Called Quest",788],["Third Eye Blind",783],["Coldplay",760],["Red Hot Chili Peppers",725],["Redveil",718],["Arctic Monkeys",713],["Pusha T",668],["Nas",628],["Rex Orange County",624],["Foo Fighters",603],["Paramore",584],["Clairo",562],["MF DOOM",533],["Steve Lacy",531],["Brent Faiyaz",521],["Ab-Soul",514],["JPEGMAFIA",509]],"allTimePlays":126541,"otherShare":0.246},"priya":{"top50":[["Kanye West",3706],["JPEGMAFIA",2222],["Kendrick Lamar",2175],["The Weeknd",1838],["Travi$ Scott",1656],["Kid Cudi",1264],["Drake",1254],["Playboi Carti",1209],["A$AP Rocky",1202],["Tyler, The Creator",1184],["Radiohead",1137],["Westside Gunn",871],["BROCKHAMPTON",813],["Frank Ocean",726],["Mac Miller",709],["Lucky Twice",675],["J. Cole",635],["Death Grips",580],["Future",556],["Earl Sweatshirt",523],["Freddie Gibbs",522],["Nas",509],["Baby Keem",499],["Taylor Swift",498],["N*E*R*D",484],["Chief Keef",478],["Nirvana",450],["MF DOOM",441],["Daft Punk",401],["Danny Brown",388],["Denzel Curry",380],["J Dilla",376],["Childish Gambino",367],["Deftones",362],["Madvillain",352],["Rihanna",349],["Injury Reserve",339],["Benny the Butcher",331],["Lil B",327],["Joey Bada$$",326],["Pusha T",324],["A Tribe Called Quest",320],["070 Shake",312],["Jeff Buckley",299],["Bon Iver",298],["Aphex Twin",280],["Conway the Machine",269],["JID",266],["Björk",262],["Lil Ugly Mane",260]],"allTimePlays":53164,"otherShare":0.323},"isaac":{"top50":[["Kanye West",8915],["Playboi Carti",6624],["Drake",4863],["Travi$ Scott",3937],["Lil Uzi Vert",2996],["Gunna",2434],["Young Thug",2282],["Tangerine Dream",1574],["Future",1531],["Lil Baby",1467],["Pop Smoke",1464],["JAY-Z",1447],["Dr. Dre",1393],["Jack Harlow",1372],["Skepta",1297],["A$AP Rocky",1195],["RiceGum",1135],["YoungBoy Never Broke Again",1103],["NLE Choppa",1062],["Nirvana",1058],["Lil' Wayne",1049],["Kendrick Lamar",1002],["Aphex Twin",986],["Young Nudy",850],["Yung Lean",846],["Kodak Black",837],["Oasis",834],["Trent Reznor and Atticus Ross",772],["Radiohead",770],["Migos",736],["Kero Kero Bonito",735],["The Weeknd",715],["Comethazine",703],["KIDS SEE GHOSTS",696],["21 Savage",655],["Lil Yachty",630],["A$AP Mob",618],["Snoop Dogg",613],["Bladee",601],["Against All Logic",592],["J Dilla",558],["Pusha T",546],["Maxo Kream",520],["SPOTEMGOTTEM",517],["Jasper Byrne",516],["Blueface",506],["6ix9ine",501],["The Strokes",492],["XXXTENTACION",488],["Chief Keef",487]],"allTimePlays":121681,"otherShare":0.429},"ethan":{"top50":[["Red Velvet",31899],["Mitski",12379],["TWICE",11902],["Lorde",7884],["Lana Del Rey",5497],["Loona",4977],["Joy",3438],["소녀시대",2683],["Adele",2248],["Miley Cyrus",2065],["Billie Eilish",1801],["Ariana Grande",1718],["Orange Caramel",1630],["ROSALÍA",1620],["Red Velvet - IRENE & SEULGI",1552],["2NE1",1390],["Wendy",1266],["Kali Uchis",1254],["BLACKPINK",1237],["dodie",1232],["Blondie",1223],["Marina",1155],["King Princess",1153],["beabadoobee",1062],["Taylor Swift",1051],["Lily Allen",1040],["mxmtoon",992],["SISTAR",931],["Grimes",903],["IU",886],["aespa",846],["Stay-C",774],["YOOMEI",654],["The Neighbourhood",651],["Palaye Royale",646],["Glee Cast",620],["여자친구",619],["AKB48",605],["Pyotr Ilyich Tchaikovsky",592],["Chappell Roan",565],["ABBA",555],["Amy Winehouse",536],["Miki Matsubara",516],["Beyoncé",512],["Selena",505],["Wonder Girls",502],["Mahalia",501],["Tessa Violet",493],["Rihanna",490],["현아",485]],"allTimePlays":172648,"otherShare":0.295},"diego":{"top50":[["TWICE",13193],["LE SSERAFIM",4116],["Ariana Grande",3382],["NAYEON",3074],["Stay-C",2654],["Red Velvet",2463],["NewJeans",2055],["Loona",1835],["UMI",1772],["ENHYPEN",1737],["takayan",1698],["Beyoncé",1534],["aespa",1523],["TOMORROW X TOGETHER",1485],["JO YURI",1426],["fromis_9",1370],["IU",1281],["Coco & Clair Clair",1276],["Dreamcatcher",1121],["One Direction",1041],["Seventeen",1013],["PinkPantheress",945],["ILLIT",942],["Billlie",748],["IVE",741],["beabadoobee",713],["Laufey",690],["daigoro789",681],["SZA",645],["BTS",637],["Taylor Swift",613],["YUKIKA",590],["Sabrina Carpenter",533],["LOOΠΔ / ODD EYE CIRCLE",526],["Yena",517],["Weeekly",491],["Alessia Cara",490],["KATSEYE",475],["Triple S",473],["MISAMO",461],["Kep1er",456],["BLACKPINK",441],["Olivia Rodrigo",438],["Kendrick Lamar",434],["Yu-Peng Chen",412],["Na yeon",409],["NCT DREAM",407],["Chloe x Halle",400],["NMIXX",399],["ITZY",392]],"allTimePlays":98262,"otherShare":0.317},"owen":{"top50":[["ATEEZ",56927],["My Chemical Romance",35751],["BOYNEXTDOOR",22488],["Pierce the Veil",17605],["Waterparks",15884],["Stray Kids",14204],["TOMORROW X TOGETHER",10369],["Paramore",6659],["The Marías",5299],["ENHYPEN",5290],["P1Harmony",4406],["Faye Webster",4366],["BTS",4074],["The Home Team",3847],["chloe moriondo",3549],["Bad Omens",3548],["xikers",3157],["V",2979],["wave to earth",2861],["The Neighbourhood",2821],["Billie Eilish",2676],["Sleep Token",2665],["Seventeen",2471],["Sleeping With Sirens",2420],["Conan Gray",2382],["Melanie Martinez",2286],["ZEROBASEONE",2210],["The Boyz",2196],["Chappell Roan",2178],["NCT 127",1965],["Clairo",1724],["ILLIT",1633],["WayV",1623],["ITZY",1498],["TAEYONG",1440],["Chase Atlantic",1317],["Panic! at the Disco",1260],["Taylor Swift",1193],["j-hope",1132],["Men I Trust",1114],["Magnolia Park",1084],["Jung Kook",1074],["The Poles",1023],["Fall Out Boy",1011],["Ariana Grande",984],["Bring Me the Horizon",984],["NCT U",945],["CRAVITY",895],["Stromae & Pomme",862],["NCT DREAM",815]],"allTimePlays":329603,"otherShare":0.171},"hannah":{"top50":[["ENHYPEN",15863],["ATEEZ",4180],["Stray Kids",4052],["TOMORROW X TOGETHER",3236],["$uicideboy$",2255],["P1Harmony",954],["Lefty Sm",865],["Mägo de Oz",824],["Deftones",758],["YEONJUN",741],["Rammstein",738],["XG",710],["XXXTENTACION",654],["Bad Bunny",648],["Nicki Nicole",618],["Peso Pluma",614],["Seventeen",607],["BOYNEXTDOOR",581],["Don Toliver",575],["tornillo",564],["DXMON",540],["Milo j",511],["Blank",466],["Fabiø Guerra",464],["Bring Me the Horizon",394],["&TEAM",385],["Jake Webber",381],["LE SSERAFIM",374],["Trueno",370],["Post Malone",355],["Evanescence",353],["BTS",342],["Santa Fe Klan",329],["Black Eyed Peas",323],["Young Miko",309],["Xdinary Heroes",283],["Marluxiam",257],["Don Omar",254],["RIIZE",250],["Tyler, The Creator",225],["Odetari",224],["TAEMIN",224],["ITZY",213],["Bizarrap",212],["Kickflip",198],["Plan B",195],["Ozuna",189],["Snow Tha Product",188],["Rae Sremmurd",187],["NLE Choppa",172]],"allTimePlays":71063,"otherShare":0.308},"lucy":{"top50":[["BLACKPINK",8054],["Doja Cat",7007],["Red Velvet",2840],["BTS",2045],["Ariana Grande",1689],["Tinashe",1620],["KAROL G",1563],["Bad Bunny",1555],["Kali Uchis",1555],["ITZY",1520],["Megan Thee Stallion",1213],["Melanie Martinez",1132],["Anitta",1068],["Tate McRae",1066],["TWICE",1046],["Sabrina Carpenter",1000],["Camila Cabello",991],["Lady Gaga",984],["Jennie",969],["f(x)",962],["ROSALÍA",945],["Lisa",913],["SUNMI",903],["FLO",874],["SZA",865],["Nicki Minaj",863],["21 Savage",849],["2NE1",841],["BROCKHAMPTON",831],["Summer Walker",827],["Monaleo",825],["EXID",823],["Tyla",811],["Halsey",766],["소녀시대",759],["GOT7",704],["Ikon",704],["Dua Lipa",686],["Tyler, The Creator",679],["aespa",676],["Olivia Rodrigo",663],["Madison Beer",627],["Flo Milli",624],["SISTAR",615],["Katy Perry",597],["Charli xcx",579],["Rosé",573],["The Weeknd",542],["Pink Guy",530],["Logic",523]],"allTimePlays":134095,"otherShare":0.5}},"groups":{"pop":["eli","leila","sofia","chloe","grace","zoe","jordan"],"hiphop":["nina","marcus","noah","priya","isaac"],"kpop":["ethan","diego","owen","hannah","lucy"]},"genres":{"$uicideboy$":"hip hop","A$AP Rocky":"hip hop","ABBA":"pop","ATEEZ":"k-pop","Adele":"pop","Amy Winehouse":"soul","Anitta":"funk","Aphex Twin":"electronic","Arctic Monkeys":"indie rock","Ariana Grande":"pop","Avril Lavigne":"pop punk","Azealia Banks":"trap","BLACKPINK":"k-pop","BROCKHAMPTON":"hip hop","BTS":"k-pop","Bad Bunny":"reggaeton","Beach House":"dream pop","Beyoncé":"pop","Billie Eilish":"electropop","Björk":"experimental","Bladee":"cloud rap","Bon Iver":"indie folk","Bring Me the Horizon":"metalcore","Britney Spears":"pop","Camila Cabello":"pop","Carly Rae Jepsen":"pop","Chappell Roan":"pop","Charli xcx":"electropop","Chief Keef":"trap","Childish Gambino":"hip hop","Christina Aguilera":"pop","Clairo":"bedroom pop","Coldplay":"alternative rock","Conan Gray":"pop","Crystal Castles":"electroclash","Daft Punk":"electronic","David Bowie":"art rock","Death Grips":"experimental hip hop","Deftones":"alternative metal","Demi Lovato":"pop","Denzel Curry":"hip hop","Destroy Lonely":"hip hop","Doja Cat":"hip hop","Drake":"hip hop","Dreamcatcher":"k-pop","Dua Lipa":"pop","ENHYPEN":"k-pop","Earl Sweatshirt":"hip hop","Ellie Goulding":"electropop","Evanescence":"alternative metal","Fall Out Boy":"pop punk","Fleetwood Mac":"rock","Florence + the Machine":"indie rock","Foo Fighters":"rock","Frank Ocean":"contemporary r&b","Future":"hip hop","Glee Cast":"pop","Green Day":"punk rock","Grimes":"art pop","Halsey":"pop","Harry Styles":"pop","ITZY":"k-pop","IVE":"k-pop","Imagine Dragons":"alternative rock","Interpol":"indie rock","J. Cole":"hip hop","JAY-Z":"pop rap","JPEGMAFIA":"experimental hip hop","Janet Jackson":"pop","Jeff Buckley":"alternative rock","John Mayer":"blues rock","Juice WRLD":"hip hop","Justin Bieber":"pop","Kali Uchis":"r&b","Kanye West":"hip hop","Katy Perry":"pop","Ke$ha":"dance-pop","Kelly Clarkson":"pop","Ken Carson":"hip hop","Kendrick Lamar":"hip hop","Kid Cudi":"hip hop","Kim Petras":"pop","Kylie Minogue":"dance-pop","LE SSERAFIM":"k-pop","Lady Gaga":"pop","Lana Del Rey":"indie pop","Laufey":"jazz pop","Led Zeppelin":"hard rock","Lil Uzi Vert":"hip hop","Linkin Park":"nu metal","Little Mix":"pop","Loona":"k-pop","Lorde":"pop","Lucky Twice":"edm","M.I.A.":"pop","MF DOOM":"hip hop","Mac Miller":"hip hop","Madonna":"pop","Mariah Carey":"pop","Marina":"pop","Marina & the Diamonds":"pop","Maroon 5":"pop","Megan Thee Stallion":"hip hop","Melanie Martinez":"indie pop","Michael Jackson":"pop","Miley Cyrus":"pop","Mitski":"indie rock","My Chemical Romance":"pop punk","NCT 127":"k-pop","NCT DREAM":"k-pop","NewJeans":"k-pop","Nicki Minaj":"hip hop","Nirvana":"grunge","Oasis":"britpop","Olivia Rodrigo":"pop","One Direction":"pop","Panic! at the Disco":"pop punk","Paramore":"pop rock","Phoebe Bridgers":"singer-songwriter","Pierce the Veil":"post-hardcore","PinkPantheress":"uk garage","Pixies":"alternative rock","Playboi Carti":"hip hop","Post Malone":"hip hop","ROSALÍA":"flamenco","Radiohead":"alternative rock","Rammstein":"industrial metal","Red Hot Chili Peppers":"funk rock","Red Velvet":"k-pop","Rihanna":"pop","Rina Sawayama":"electropop","SZA":"contemporary r&b","Sabrina Carpenter":"pop","Selena Gomez":"pop","Seventeen":"k-pop","Shakira":"pop","Sleep Token":"progressive metal","Steve Lacy":"alternative r&b","Stray Kids":"k-pop","TOMORROW X TOGETHER":"k-pop","TWICE":"k-pop","Tame Impala":"psychedelic rock","Tate McRae":"pop","Taylor Swift":"pop","The 1975":"indie rock","The Beatles":"rock","The Cure":"post-punk","The Killers":"alternative rock","The Neighbourhood":"indie pop","The Smashing Pumpkins":"alternative rock","The Smiths":"jangle pop","The Strokes":"indie rock","The Weeknd":"r&b","Tinashe":"pop","Tove Lo":"electropop","Travi$ Scott":"hip hop","Troye Sivan":"pop","Tyler, The Creator":"hip hop","XXXTENTACION":"trap","Yeat":"rage","Young Thug":"hip hop","Yung Lean":"cloud rap","aespa":"k-pop","beabadoobee":"indie pop","blink-182":"pop punk","소녀시대":"k-pop"}};
+/* </generated-data> */
+
+/* =====================================================================================
+   HELPERS
+   ===================================================================================== */
+const $ = (sel) => document.querySelector(sel);
+const esc = (s) => String(s).replace(/[&<>"']/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
+const fmt = (n) => Math.round(n).toLocaleString("en-US");
+const pct = (x) => Math.round(x * 100) + "%";
+const cap = (s) => s.charAt(0).toUpperCase() + s.slice(1);
+const byName = (a, b) => nameOf(a).localeCompare(nameOf(b));
+
+/** Fill a TEXT template; vars are escaped unless the key ends in "Html". */
+function t(key, vars = {}) {
+  const s = TEXT[key];
+  if (s == null) { console.warn("Missing TEXT." + key); return key; }
+  return s.replace(/\{(\w+)\}/g, (_, k) => (vars[k] == null ? "" : String(vars[k])));
+}
+const tx = (key, vars) => esc(t(key, vars));                       // escaped, for HTML
+/** Use TEXT[key + "You"] when the sentence's subject is the viewer ("You lead" vs "Sofia leads"). */
+const tYou = (key, pk, vars) => t(pk === CONFIG.viewer && TEXT[key + "You"] ? key + "You" : key, vars);
+const playsText = (n) => (n === 1 ? t("playsOne") : t("plays", { n: fmt(n) }));
+
+function nameOf(pk) { return CONFIG.people[pk]?.name || pk; }
+function colorOf(pk) { return CONFIG.people[pk]?.color || "#A7A3B5"; }
+/** "You"/"you" for the viewer, the name for everyone else. */
+function who(pk, start = true) { return pk === CONFIG.viewer ? (start ? t("you") : t("youLower")) : nameOf(pk); }
+function avatar(pk, size = "") {
+  return `<span class="av ${size}" style="--c:${colorOf(pk)}" title="${esc(nameOf(pk))}" aria-hidden="true">${esc(nameOf(pk).charAt(0))}</span>`;
+}
+
+const ICONS = {
+  home: '<path d="M3 11l9-7 9 7v9a1 1 0 0 1-1 1h-5v-6h-6v6H4a1 1 0 0 1-1-1z"/>',
+  rank: '<path d="M5 20V11M12 20V5M19 20v-6"/>',
+  match: '<path d="M12 20s-7-4.4-7-10a4 4 0 0 1 7-2.6A4 4 0 0 1 19 10c0 5.6-7 10-7 10z"/>',
+  challenges: '<path d="M5 21V4h11l-1.5 4L16 12H5"/>',
+  recap: '<path d="M12 3l2.2 5.8L20 11l-5.8 2.2L12 19l-2.2-5.8L4 11l5.8-2.2z"/>',
+  chevron: '<path d="M6 9l6 6 6-6"/>',
+  back: '<path d="M15 18l-6-6 6-6"/>',
+  bell: '<path d="M6 16V11a6 6 0 1 1 12 0v5l2 2H4zM10 21h4"/>',
+};
+const icon = (name, cls = "ico") => `<svg class="${cls}" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">${ICONS[name]}</svg>`;
+const CROWN = '<svg class="crown" viewBox="0 0 24 24" fill="currentColor" aria-label="Crown"><path d="M3 8l4.5 4L12 5l4.5 7L21 8l-2 11H5z"/></svg>';
+
+// Seeded random numbers so the simulated months are the same on every load.
+function mulberry32(a) { return () => { a |= 0; a = (a + 0x6D2B79F5) | 0; let x = Math.imul(a ^ (a >>> 15), 1 | a); x = (x + Math.imul(x ^ (x >>> 7), 61 | x)) ^ x; return ((x ^ (x >>> 14)) >>> 0) / 4294967296; }; }
+function hash(s) { let h = 2166136261; for (const c of s) { h ^= c.codePointAt(0); h = Math.imul(h, 16777619); } return h >>> 0; }
+function gauss(rng) { let u = 0; while (u === 0) u = rng(); return Math.sqrt(-2 * Math.log(u)) * Math.cos(2 * Math.PI * rng()); }
+function cumulative(ws) { const out = []; let s = 0; for (const w of ws) { s += w; out.push(s); } return out; }
+function pick(cum, r) { const x = r * cum[cum.length - 1]; let lo = 0, hi = cum.length - 1; while (lo < hi) { const m = (lo + hi) >> 1; if (cum[m] > x) hi = m; else lo = m + 1; } return lo; }
+
+/* ----- Storage: optional convenience only; the app works without it ----- */
+const STORE_KEY = "jamvibe-demo-v1";
+function loadSaved() { try { return JSON.parse(localStorage.getItem(STORE_KEY) || "null"); } catch { return null; } }
+function save() { try { localStorage.setItem(STORE_KEY, JSON.stringify({ joined: state.joined, challenges: state.challenges, day: state.day, group: state.group })); } catch { /* storage blocked: keep in memory */ } }
+function clearSaved() { try { localStorage.removeItem(STORE_KEY); } catch { /* ignore */ } }
+
+/* =====================================================================================
+   DATA MODEL: real all-time numbers + simulated months
+   ===================================================================================== */
+const MONTHS = CONFIG.sim.months.map((m) => ({ ...m, days: new Date(m.year, m.month, 0).getDate() }));
+const THIS = CONFIG.sim.thisMonth, LAST = CONFIG.sim.lastMonth;
+const ARTIST_INDEX = {};          // person -> Map(artist -> index in their top 50)
+const ALL_TIME = {};              // person -> Map(artist -> real all-time plays)
+for (const [pk, p] of Object.entries(DATA.people)) {
+  ARTIST_INDEX[pk] = new Map(p.top50.map(([a], i) => [a, i]));
+  ALL_TIME[pk] = new Map(p.top50);
+}
+
+function membersOf(gk) { return [...new Set([...(DATA.groups[gk] || []), ...(CONFIG.groups[gk].extraMembers || [])])].filter((pk) => DATA.people[pk]); }
+function genreOf(artist) { return DATA.genres[artist] || null; }
+
+/** Each person's typical monthly volume (seeded), then month-to-month wobble. */
+function monthlyTotal(pk, mi) {
+  const s = CONFIG.sim;
+  const base = Math.exp(Math.log(s.medianMonthlyPlays) + s.spread * gauss(mulberry32(hash(`${s.seed}|${pk}|base`))));
+  const wobble = Math.exp(s.monthToMonth * gauss(mulberry32(hash(`${s.seed}|${pk}|${mi}|wobble`))));
+  return Math.max(s.minPlays, Math.min(s.maxPlays, Math.round(base * wobble)));
+}
+
+const SIM_CACHE = new Map();
+/** Simulated month for one person: cum[day-1][i] = plays of artist i through that day; last index = other artists. */
+function simMonth(pk, mi) {
+  const key = pk + "|" + mi;
+  if (SIM_CACHE.has(key)) return SIM_CACHE.get(key);
+  const p = DATA.people[pk], m = MONTHS[mi], s = CONFIG.sim;
+  const rng = mulberry32(hash(`${s.seed}|${pk}|${mi}|plays`));
+  const named = p.top50.reduce((sum, [, n]) => sum + n, 0);
+  const artistCum = cumulative([...p.top50.map(([, n]) => (n / named) * (1 - p.otherShare)), p.otherShare]);
+  const dayCum = cumulative(Array.from({ length: m.days }, (_, d) => ([0, 6].includes(new Date(m.year, m.month - 1, d + 1).getDay()) ? s.weekendBoost : 1)));
+  const width = p.top50.length + 1, daily = Array.from({ length: m.days }, () => new Uint32Array(width));
+  const total = monthlyTotal(pk, mi);
+  for (let i = 0; i < total; i++) daily[pick(dayCum, rng())][pick(artistCum, rng())]++;
+  const cum = [], run = new Uint32Array(width);
+  for (const d of daily) { for (let i = 0; i < width; i++) run[i] += d[i]; cum.push(run.slice()); }
+  const out = { cum, total };
+  SIM_CACHE.set(key, out);
+  return out;
+}
+
+function dayFor(mi) { return mi === THIS ? state.day : MONTHS[mi].days; }
+/** Plays of one artist. scope: {kind:"all"} for real all-time, or {kind:"month", mi, day?}. */
+function playsOf(pk, artist, scope) {
+  if (scope.kind === "all") return ALL_TIME[pk].get(artist) || 0;
+  const i = ARTIST_INDEX[pk].get(artist);
+  if (i == null) return 0;
+  const day = scope.day ?? dayFor(scope.mi);
+  return day < 1 ? 0 : simMonth(pk, scope.mi).cum[day - 1][i];
+}
+function totalOf(pk, scope) {
+  if (scope.kind === "all") return DATA.people[pk].allTimePlays;
+  const day = scope.day ?? dayFor(scope.mi);
+  return day < 1 ? 0 : simMonth(pk, scope.mi).cum[day - 1].reduce((a, b) => a + b, 0);
+}
+/** Map artist -> plays for one person in a scope (named artists only). */
+function artistPlays(pk, scope) {
+  return new Map(DATA.people[pk].top50.map(([a]) => [a, playsOf(pk, a, scope)]).filter(([, n]) => n > 0));
+}
+function genreShares(pk, scope) {
+  const g = new Map(); let sum = 0;
+  for (const [a, n] of artistPlays(pk, scope)) { const gn = genreOf(a); if (gn) { g.set(gn, (g.get(gn) || 0) + n); sum += n; } }
+  for (const [k, v] of g) g.set(k, v / (sum || 1));
+  return g;
+}
+/** Every artist anyone in the group plays, most-played first. */
+function groupArtists(gk, scope) {
+  const tot = new Map();
+  for (const pk of membersOf(gk)) for (const [a] of DATA.people[pk].top50) tot.set(a, (tot.get(a) || 0) + playsOf(pk, a, scope));
+  return [...tot].sort((x, y) => y[1] - x[1] || x[0].localeCompare(y[0]));
+}
+/** Everyone in the group ranked by plays of one artist (people with 0 included, at the bottom). */
+function leaderboard(gk, artist, scope) {
+  return membersOf(gk).map((pk) => ({ pk, plays: playsOf(pk, artist, scope) })).sort((a, b) => b.plays - a.plays || byName(a.pk, b.pk));
+}
+function rankOf(board, pk) { return board.findIndex((r) => r.pk === pk) + 1; }
+function cosine(a, b) {
+  const A = ALL_TIME[a], B = ALL_TIME[b]; let dot = 0, na = 0, nb = 0;
+  for (const [k, v] of A) { na += v * v; if (B.has(k)) dot += v * B.get(k); }
+  for (const v of B.values()) nb += v * v;
+  return na && nb ? dot / Math.sqrt(na * nb) : 0;
+}
+function sharedArtists(a, b) {
+  return [...ALL_TIME[a]].filter(([k]) => ALL_TIME[b].has(k)).map(([k, v]) => [k, v, ALL_TIME[b].get(k)]).sort((x, y) => Math.min(y[1], y[2]) - Math.min(x[1], x[2]));
+}
+function pairs(gk) { const m = membersOf(gk), out = []; for (let i = 0; i < m.length; i++) for (let j = i + 1; j < m.length; j++) out.push([m[i], m[j], cosine(m[i], m[j])]); return out; }
+
+/** Group Sound: average genre shares with each member weighted equally (real all-time). */
+function groupSound(gk) {
+  const members = membersOf(gk), avg = new Map(), per = members.map((pk) => [pk, genreShares(pk, { kind: "all" })]);
+  for (const [, g] of per) for (const [k, v] of g) avg.set(k, (avg.get(k) || 0) + v / members.length);
+  return [...avg].sort((a, b) => b[1] - a[1]).slice(0, 5).map(([genre, share]) => {
+    const [leaner, lean] = per.map(([pk, g]) => [pk, g.get(genre) || 0]).sort((a, b) => b[1] - a[1] || byName(a[0], b[0]))[0];
+    return { genre, share, leaner, lean };
+  });
+}
+
+/** Rank-change alerts for the current month, from day 2 up to `upTo`. */
+function alertsFor(gk, upTo) {
+  const artists = groupArtists(gk, { kind: "all" }).slice(0, CONFIG.sim.alertArtists).map(([a]) => a);
+  const out = [];
+  for (let d = 2; d <= upTo; d++) {
+    const today = [];
+    for (const artist of artists) {
+      const before = leaderboard(gk, artist, { kind: "month", mi: THIS, day: d - 1 });
+      const now = leaderboard(gk, artist, { kind: "month", mi: THIS, day: d });
+      now.forEach((row, idx) => {
+        const r = idx + 1, was = rankOf(before, row.pk);
+        if (r > 3 || was <= r || row.plays < CONFIG.sim.alertMinPlays) return;
+        // The person directly passed: was above them yesterday, is below them today with strictly fewer plays.
+        const passed = now.slice(idx + 1).find((o) => rankOf(before, o.pk) < was && o.plays < row.plays);
+        if (passed) today.push({ day: d, artist, x: row.pk, y: passed.pk, rank: r });
+      });
+    }
+    today.sort((a, b) => a.rank - b.rank || (b.x === CONFIG.viewer || b.y === CONFIG.viewer) - (a.x === CONFIG.viewer || a.y === CONFIG.viewer));
+    out.push(...today.slice(0, 2));
+  }
+  return out;
+}
+function alertText(al) {
+  return al.rank === 1 ? t("alertCrown", { x: who(al.x), y: who(al.y, false), artist: al.artist })
+    : t("alertPassed", { x: who(al.x), y: who(al.y, false), artist: al.artist, rank: al.rank });
+}
+function closestRace(gk) {
+  let best = null;
+  for (const [artist] of groupArtists(gk, { kind: "all" }).slice(0, CONFIG.sim.alertArtists)) {
+    const [a, b] = leaderboard(gk, artist, { kind: "month", mi: THIS });
+    if (!a || !b || a.plays < 10 || b.plays === 0) continue;
+    const gap = a.plays - b.plays;
+    if (!best || gap < best.gap) best = { artist, leader: a.pk, chaser: b.pk, gap };
+  }
+  return best;
+}
+
+/* =====================================================================================
+   STATE
+   ===================================================================================== */
+const saved = loadSaved();
+const state = {
+  tab: "home", overlay: null,                 // overlay: "join" | "compare" | "share" | null
+  group: saved?.group && CONFIG.groups[saved.group] ? saved.group : CONFIG.startJoined[0],
+  joined: Array.isArray(saved?.joined) ? saved.joined.filter((g) => CONFIG.groups[g]) : [...CONFIG.startJoined],
+  day: Number.isInteger(saved?.day) ? Math.min(Math.max(saved.day, 1), MONTHS[THIS].days) : CONFIG.sim.startDay,
+  challenges: saved?.challenges || structuredClone(CONFIG.challenges),
+  rankScope: "this", recapScope: "this", rankArtist: null, rankSearch: "",
+  matchA: CONFIG.viewer, matchB: null, compareA: null, compareB: null, shareArtist: null,
+  newAlertDay: null, challengeForm: null, joinMessage: null, joinCode: "",
+};
+if (!state.joined.includes(state.group)) state.group = state.joined[0];
+const scopeOf = (s) => (s === "all" ? { kind: "all" } : { kind: "month", mi: s === "last" ? LAST : THIS });
+
+/* =====================================================================================
+   SCREENS: one function per screen, each returns HTML for #screen
+   ===================================================================================== */
+const simTag = () => `<span class="sim">${tx("simLabel")}</span>`;
+const realTag = () => `<span class="sim real">${tx("realLabel")}</span>`;
+function scopeToggle(action, current, withAll) {
+  const opts = [["this", t("thisMonth")], ["last", t("lastMonth")], ...(withAll ? [["all", t("allTime")]] : [])];
+  return `<div class="seg" role="group">${opts.map(([v, label]) => `<button data-action="${action}" data-value="${v}" aria-pressed="${current === v}">${esc(label)}</button>`).join("")}</div>`;
+}
+function daysLeftText() {
+  const left = MONTHS[THIS].days - state.day;
+  return left <= 0 ? t("lastDay") : left === 1 ? t("oneDayLeft") : t("daysLeft", { n: left });
+}
+
+function renderHome() {
+  const gk = state.group, m = MONTHS[THIS], members = membersOf(gk);
+  const left = m.days - state.day;
+  const results = left <= 0 ? t("resultsToday") : left === 1 ? t("resultsTomorrow") : t("resultsIn", { n: left });
+  const alerts = alertsFor(gk, state.day).reverse();
+  const latest = alerts[0], earlier = alerts.slice(1, 3);
+  const race = closestRace(gk);
+  const sound = groupSound(gk);
+  const isNew = latest && latest.day === state.newAlertDay;
+  return `
+  <section class="stack">
+    <div class="row between">
+      <div class="grow"><h1>${esc(CONFIG.groups[gk].name)}</h1><p class="muted small">${tx("homeMembers", { n: members.length })}</p></div>
+    </div>
+    <div class="members">${members.map((pk) => `<div class="member">${avatar(pk, "lg")}<span>${esc(who(pk))}</span></div>`).join("")}</div>
+
+    <div class="card">
+      <div class="row between wrap">${simTag()}<span class="pill">${tx("raceTitle", { month: m.label })}</span></div>
+      <h2>${tx("raceDay", { day: state.day, days: m.days })} · ${esc(results)}</h2>
+      <div class="bar" role="progressbar" aria-valuemin="1" aria-valuemax="${m.days}" aria-valuenow="${state.day}"><i style="width:${(state.day / m.days) * 100}%"></i></div>
+      <div class="row wrap">
+        <button class="btn small" data-action="simulate-day" ${left <= 0 ? "disabled" : ""}>${left <= 0 ? tx("monthDone") : tx("simulateDay")}</button>
+        ${state.day !== CONFIG.sim.startDay ? `<button class="link small" data-action="reset-day">${tx("resetMonth", { day: CONFIG.sim.startDay })}</button>` : ""}
+      </div>
+    </div>
+
+    <div class="card ${isNew ? "hot" : ""}" id="latest-alert">
+      <div class="row between"><span class="eyebrow">${tx("latestAlert")}</span>${isNew ? `<span class="pill new">${tx("newAlert")}</span>` : latest ? `<span class="pill">${tx("alertDay", { day: latest.day })}</span>` : ""}</div>
+      ${state.newAlertDay === -1 ? `<p class="muted small">${tx("noAlertsToday", { day: state.day })}</p>` : ""}
+      ${latest ? `<div class="alert">${avatar(latest.x)}<p>${esc(alertText(latest))}</p></div>` : `<p class="muted">${tx("noAlerts")}</p>`}
+      ${earlier.length ? `<div class="eyebrow">${tx("earlierAlerts")}</div>${earlier.map((al) => `<div class="alert">${avatar(al.x, "sm")}<p class="small">${esc(alertText(al))} <span class="muted">${tx("alertDay", { day: al.day })}</span></p></div>`).join("")}` : ""}
+    </div>
+
+    <div class="card">
+      <span class="eyebrow">${tx("closestRace")}</span>
+      ${race ? `<div class="row"><div class="avs">${avatar(race.leader)}${avatar(race.chaser)}</div><p class="grow"><b>${esc(race.gap === 0
+          ? t("closestRaceTied", { leader: who(race.leader), chaser: who(race.chaser, false), artist: race.artist })
+          : tYou("closestRaceText", race.leader, { leader: who(race.leader), chaser: who(race.chaser, false), gap: playsText(race.gap), artist: race.artist }))}</b></p></div>`
+        : `<p class="muted">${tx("noRace")}</p>`}
+    </div>
+
+    <div class="card">
+      <div class="row between wrap"><h2>${tx("groupSound")}</h2>${realTag()}</div>
+      <p class="muted small">${tx("groupSoundSub")}</p>
+      ${sound.map((s) => `
+        <div class="stack" style="gap:6px">
+          <div class="row between"><b>${esc(cap(s.genre))}</b><span class="num muted">${pct(s.share)}</span></div>
+          <div class="bar"><i style="width:${s.share * 100}%"></i></div>
+          <div class="row small muted">${avatar(s.leaner, "sm")}<span>${esc(tYou("leansHardest", s.leaner, { name: who(s.leaner), pct: pct(s.lean) }))}</span></div>
+        </div>`).join("")}
+    </div>
+
+    <button class="btn ghost" data-action="open-compare">${tx("compareGroups")}</button>
+    <button class="link small" data-action="reset-demo" style="justify-self:center">${tx("resetDemo")}</button>
+  </section>`;
+}
+
+function renderRank() {
+  const gk = state.group, scope = scopeOf(state.rankScope), artists = groupArtists(gk, scope);
+  if (!state.rankArtist || !artists.some(([a]) => a === state.rankArtist)) state.rankArtist = artists[0]?.[0];
+  const board = leaderboard(gk, state.rankArtist, scope), top = board[0]?.plays || 0;
+  const vr = rankOf(board, CONFIG.viewer), vrow = board[vr - 1];
+  let you = "";
+  if (vr) you = vrow.plays === 0 ? t("youNoPlays", { artist: state.rankArtist })
+    : vrow.plays === top ? t("youAreFirst", { artist: state.rankArtist })
+    : t("youAreBehind", { rank: vr, n: playsText(top - vrow.plays), artist: state.rankArtist });
+  return `
+  <section class="stack">
+    <h1>${tx("rankTitle")}</h1>
+    ${scopeToggle("rank-scope", state.rankScope, true)}
+    ${scope.kind === "all" ? realTag() : simTag()}
+    <div class="card">
+      <label class="field" for="artist-search">${tx("searchArtists")}
+        <input class="input" id="artist-search" type="search" autocomplete="off" value="${esc(state.rankSearch)}" placeholder="${tx("searchArtists")}">
+      </label>
+      <div class="scroll-list" id="artist-list">${artistListHtml(artists)}</div>
+    </div>
+    <div class="card" id="board">
+      <div class="row between wrap"><h2>${esc(state.rankArtist || "")}</h2>${genreOf(state.rankArtist) ? `<span class="pill">${esc(genreOf(state.rankArtist))}</span>` : ""}</div>
+      ${you ? `<p class="note">${esc(you)}</p>` : ""}
+      <div class="list">${board.map((r, i) => `
+        <div class="li">
+          <span class="rank">${i + 1}</span>${avatar(r.pk)}
+          <div class="grow"><div class="row"><span class="name">${esc(who(r.pk))}</span>${i === 0 && r.plays > 0 ? CROWN : ""}</div>
+            ${i > 0 && r.plays < top ? `<div class="small muted">${tx("fromFirst", { n: playsText(top - r.plays) })}</div>` : i > 0 && r.plays === top && top > 0 ? `<div class="small muted">${tx("tiedFirst")}</div>` : ""}</div>
+          <span class="num">${fmt(r.plays)}</span>
+        </div>`).join("")}</div>
+    </div>
+  </section>`;
+}
+function artistListHtml(artists) {
+  const q = state.rankSearch.trim().toLowerCase();
+  const shown = artists.filter(([a]) => !q || a.toLowerCase().includes(q)).slice(0, q ? 60 : 25);
+  if (!shown.length) return `<p class="empty">${tx("noArtists", { q: state.rankSearch })}</p>`;
+  return shown.map(([a, n]) => `<button class="artist-btn" data-action="pick-artist" data-value="${esc(a)}" aria-pressed="${a === state.rankArtist}"><span class="name">${esc(a)}</span><span class="num muted">${fmt(n)}</span></button>`).join("");
+}
+
+function renderMatch() {
+  const gk = state.group, members = membersOf(gk);
+  if (!members.includes(state.matchA)) state.matchA = members.includes(CONFIG.viewer) ? CONFIG.viewer : members[0];
+  if (!members.includes(state.matchB) || state.matchB === state.matchA) {
+    state.matchB = members.filter((m) => m !== state.matchA).sort((x, y) => cosine(state.matchA, y) - cosine(state.matchA, x))[0];
+  }
+  const a = state.matchA, b = state.matchB, ps = pairs(gk).sort((x, y) => y[2] - x[2]);
+  const score = Math.round(cosine(a, b) * 100), tier = TEXT.matchTiers.find(([min]) => score >= min)[1];
+  const shared = sharedArtists(a, b).slice(0, 8);
+  const sel = (id, val) => `<select class="input" id="${id}">${members.map((pk) => `<option value="${pk}" ${pk === val ? "selected" : ""}>${esc(who(pk))}</option>`).join("")}</select>`;
+  const pairRow = (p) => p ? `<div class="row"><div class="avs">${avatar(p[0])}${avatar(p[1])}</div><b class="grow">${esc(who(p[0]))} + ${esc(who(p[1], false))}</b><span class="num">${Math.round(p[2] * 100)}%</span></div>` : "";
+  return `
+  <section class="stack">
+    <h1>${tx("matchTitle")}</h1>
+    ${realTag()}
+    <div class="two">${sel("match-a", a)}${sel("match-b", b)}</div>
+    <div class="card" style="text-align:center">
+      ${a === b ? `<p class="muted">${tx("pickTwo")}</p>` : `
+      <div class="row" style="justify-content:center">${avatar(a, "lg")}${avatar(b, "lg")}</div>
+      <div class="ring" style="--p:${score}"><div class="num">${score}%</div></div>
+      <h2>${esc(tier)}</h2>
+      <p class="muted small">${tx("matchSub")}</p>`}
+    </div>
+    ${a === b ? "" : `<div class="card">
+      <h2>${tx("sharedArtists")}</h2>
+      ${shared.length ? `<div class="list">${shared.map(([art, na, nb]) => `<div class="li"><span class="grow name">${esc(art)}</span><span class="small muted num">${esc(who(a))} ${fmt(na)} · ${esc(who(b))} ${fmt(nb)}</span></div>`).join("")}</div>` : `<p class="muted">${tx("noShared")}</p>`}
+    </div>`}
+    <div class="card"><span class="eyebrow">${tx("twins")}</span>${pairRow(ps[0])}<span class="eyebrow">${tx("opposites")}</span>${pairRow(ps[ps.length - 1])}</div>
+  </section>`;
+}
+
+/** Progress for one challenge in the current month. */
+function challengeView(ch, gk) {
+  const scope = { kind: "month", mi: THIS }, type = { duel: "typeDuel", recommend: "typeRecommend", goal: "typeGoal" }[ch.type];
+  if (ch.type === "duel") {
+    const na = playsOf(ch.a, ch.artist, scope), nb = playsOf(ch.b, ch.artist, scope), max = Math.max(na, nb, 1);
+    const leader = na > nb ? ch.a : ch.b;
+    const lead = na === nb ? t("duelTied") : tYou("duelLead", leader, { name: who(leader), n: playsText(Math.abs(na - nb)) });
+    return { type, title: t("duelTitle", { a: who(ch.a), b: who(ch.b, false), artist: ch.artist }), status: lead,
+      bars: [[ch.a, na, max], [ch.b, nb, max]] };
+  }
+  if (ch.type === "recommend") {
+    const n = playsOf(ch.b, ch.artist, scope);
+    return { type, title: tYou("recommendTitle", ch.a, { a: who(ch.a), b: who(ch.b, false), artist: ch.artist }),
+      status: n >= ch.target ? t("recommendDone", { b: who(ch.b) }) : t("recommendProgress", { b: who(ch.b), n: fmt(n), target: fmt(ch.target) }),
+      bars: [[ch.b, Math.min(n, ch.target), ch.target]] };
+  }
+  const n = membersOf(gk).reduce((s, pk) => s + playsOf(pk, ch.artist, scope), 0);
+  return { type, title: t("goalTitle", { target: fmt(ch.target), artist: ch.artist }),
+    status: n >= ch.target ? t("goalDone") : t("goalProgress", { n: fmt(n), target: fmt(ch.target) }), bars: [[null, Math.min(n, ch.target), ch.target]] };
+}
+function validChallenge(ch, gk) {
+  const m = membersOf(gk);
+  return ["duel", "recommend", "goal"].includes(ch.type) && (ch.type === "goal" || (m.includes(ch.a) && m.includes(ch.b)));
+}
+function renderChallenges() {
+  const gk = state.group, list = (state.challenges[gk] || []).filter((c) => validChallenge(c, gk));
+  const max = CONFIG.freeChallengeLimit;
+  return `
+  <section class="stack">
+    <h1>${tx("challengesTitle")}</h1>
+    ${simTag()}
+    <div class="row between"><h2>${tx("activeChallenges", { n: list.length, max })}</h2><span class="pill">${esc(daysLeftText())}</span></div>
+    ${list.length ? list.map((ch, i) => { const v = challengeView(ch, gk); return `
+      <div class="card">
+        <div class="row between"><span class="eyebrow">${esc(v.type)}</span><button class="link small" data-action="end-challenge" data-value="${i}">${tx("endChallenge")}</button></div>
+        <h3>${esc(v.title)}</h3>
+        ${v.bars.map(([pk, n, of]) => `<div class="row">${pk ? avatar(pk, "sm") : ""}<div class="bar grow"><i style="width:${(n / of) * 100}%"></i></div><span class="num small">${fmt(n)}</span></div>`).join("")}
+        <div class="row between wrap small"><b>${esc(v.status)}</b><span class="muted">${esc(daysLeftText())}</span></div>
+        <p class="small muted">${tx("stakes", { stakes: ch.stakes })}</p>
+      </div>`; }).join("") : `<p class="empty">${tx("noChallenges")}</p>`}
+    ${state.challengeForm ? challengeFormHtml(gk) : `<button class="btn" data-action="new-challenge">${tx("newChallenge")}</button>`}
+  </section>`;
+}
+function challengeFormHtml(gk) {
+  const list = (state.challenges[gk] || []).filter((c) => validChallenge(c, gk));
+  if (list.length >= CONFIG.freeChallengeLimit) {
+    return `<div class="card"><p>${tx("challengeLimit")}</p><button class="btn ghost" data-action="close-form">${tx("cancel")}</button></div>`;
+  }
+  const f = state.challengeForm, members = membersOf(gk), me = members.includes(CONFIG.viewer) ? CONFIG.viewer : members[0];
+  const others = members.filter((m) => m !== me);
+  const artists = groupArtists(gk, { kind: "all" }).slice(0, 40).map(([a]) => a);
+  const opt = (vals, cur, label = (v) => v) => vals.map((v) => `<option value="${esc(v)}" ${v === cur ? "selected" : ""}>${esc(label(v))}</option>`).join("");
+  return `
+  <div class="card" id="challenge-form">
+    <h2>${tx("newChallenge")}</h2>
+    <label class="field" for="ch-type">${tx("fieldType")}
+      <select class="input" id="ch-type">${opt(["duel", "recommend", "goal"], f.type, (v) => t({ duel: "typeDuel", recommend: "typeRecommend", goal: "typeGoal" }[v]))}</select></label>
+    ${f.type !== "goal" ? `<label class="field" for="ch-b">${f.type === "duel" ? tx("fieldOpponent") : tx("fieldFriend")}
+      <select class="input" id="ch-b">${opt(others, f.b || others[0], nameOf)}</select></label>` : ""}
+    <label class="field" for="ch-artist">${tx("fieldArtist")}<select class="input" id="ch-artist">${opt(artists, f.artist || artists[0])}</select></label>
+    ${f.type !== "duel" ? `<label class="field" for="ch-target">${tx("fieldTarget")}<input class="input" id="ch-target" type="number" min="1" max="100000" value="${f.type === "goal" ? 500 : 15}"></label>` : ""}
+    <label class="field" for="ch-stakes">${tx("fieldStakes")}<input class="input" id="ch-stakes" maxlength="80" value="${tx("defaultStakes")}"></label>
+    <div class="two"><button class="btn ghost" data-action="close-form">${tx("cancel")}</button><button class="btn" data-action="create-challenge">${tx("createChallenge")}</button></div>
+  </div>`;
+}
+
+/** Recap numbers for one month of one group. */
+function recapData(gk, mi) {
+  const scope = { kind: "month", mi }, members = membersOf(gk);
+  const artists = groupArtists(gk, scope), [topArtist, topPlays] = artists[0] || ["", 0];
+  const genres = new Map();
+  for (const pk of members) for (const [a, n] of artistPlays(pk, scope)) { const g = genreOf(a); if (g) genres.set(g, (genres.get(g) || 0) + n); }
+  const topGenre = [...genres].sort((a, b) => b[1] - a[1])[0]?.[0] || t("genreOther");
+  const fan = leaderboard(gk, topArtist, scope)[0];
+  const total = members.reduce((s, pk) => s + totalOf(pk, scope), 0);
+  // Awards
+  const stats = members.map((pk) => {
+    const ap = artistPlays(pk, scope), tot = totalOf(pk, scope) || 1, gs = genreShares(pk, scope);
+    const [favArtist, favPlays] = [...ap].sort((a, b) => b[1] - a[1])[0] || ["", 0];
+    const others = members.filter((o) => o !== pk);
+    const unique = [...ap].filter(([a]) => !others.some((o) => ALL_TIME[o].has(a))).reduce((s, [, n]) => s + n, 0);
+    const otherPlays = tot - [...ap.values()].reduce((s, n) => s + n, 0);   // plays outside their top 50
+    return { pk, favArtist, loyal: favPlays / tot, genres: [...gs.values()].filter((v) => v >= 0.02).length, deep: (unique + otherPlays) / tot, purist: gs.get(topGenre) || 0 };
+  });
+  const best = (k) => [...stats].sort((a, b) => b[k] - a[k] || byName(a.pk, b.pk))[0];
+  const awards = CONFIG.awards.map((aw) => {
+    const key = { loyal: "loyal", hopper: "genres", deepcuts: "deep", purist: "purist" }[aw.id], w = best(key);
+    // Awards use first names ("Grace's"), never "You's".
+    const vars = { name: nameOf(w.pk), artist: w.favArtist, count: w.genres, genre: topGenre, Genre: cap(topGenre),
+      pct: pct({ loyal: w.loyal, hopper: 0, deepcuts: w.deep, purist: w.purist }[aw.id]) };
+    const fill = (s) => s.replace(/\{(\w+)\}/g, (_, k) => vars[k] ?? "");
+    return { pk: w.pk, title: fill(aw.title), text: fill(aw.text) };
+  });
+  // Biggest rank changes vs. the month before, same day of the month for the current month.
+  const prev = mi - 1, changes = [];
+  if (prev >= 0) {
+    const day = mi === THIS ? Math.min(state.day, MONTHS[prev].days) : MONTHS[prev].days;
+    for (const [artist] of artists.slice(0, 10)) {
+      const now = leaderboard(gk, artist, scope), before = leaderboard(gk, artist, { kind: "month", mi: prev, day });
+      for (const r of now) {
+        const from = rankOf(before, r.pk), to = rankOf(now, r.pk);
+        if (from !== to && r.plays > 0) changes.push({ pk: r.pk, artist, from, to, d: Math.abs(from - to) });
+      }
+    }
+    changes.sort((a, b) => b.d - a.d || a.to - b.to);
+  }
+  return { topArtist, topPlays, topGenre, fan, total, awards, changes: changes.slice(0, 4), prev };
+}
+function renderRecap() {
+  const gk = state.group, mi = state.recapScope === "last" ? LAST : THIS, r = recapData(gk, mi), m = MONTHS[mi];
+  return `
+  <section class="stack">
+    <h1>${mi === THIS ? tx("recapSoFar", { month: m.label }) : tx("recapTitle", { month: m.label })}</h1>
+    ${scopeToggle("recap-scope", state.recapScope, false)}
+    ${simTag()}
+    <div class="card">
+      <span class="eyebrow">${tx("topArtist")}</span>
+      <div class="big">${esc(r.topArtist)}</div>
+      <div class="two">
+        <div><span class="eyebrow">${tx("topGenre")}</span><h2>${esc(cap(r.topGenre))}</h2></div>
+        <div><span class="eyebrow">${tx("totalPlays")}</span><h2 class="num">${fmt(r.total)}</h2></div>
+      </div>
+      ${r.fan ? `<div class="row">${avatar(r.fan.pk)}<div><span class="eyebrow">${tx("biggestFan")}</span><p><b>${esc(t("biggestFanText", { name: who(r.fan.pk), n: playsText(r.fan.plays), artist: r.topArtist }))}</b></p></div></div>` : ""}
+    </div>
+    <div class="card">
+      <h2>${tx("awardsTitle")}</h2>
+      ${r.awards.map((a) => `<div class="award">${avatar(a.pk, "lg")}<div><h3>${esc(a.title)}</h3><p class="small muted">${esc(a.text)}</p></div></div>`).join("")}
+    </div>
+    <div class="card">
+      <h2>${tx("rankChanges")}</h2>
+      ${r.changes.length ? `<div class="list">${r.changes.map((c) => `<div class="li">${avatar(c.pk, "sm")}<p class="grow small">${esc(t(c.to < c.from ? "climbed" : "slipped", { name: who(c.pk), from: c.from, to: c.to, artist: c.artist }))}</p><span class="pill">${c.to < c.from ? "▲" : "▼"} ${c.d}</span></div>`).join("")}</div>`
+        : `<p class="muted">${r.prev >= 0 ? tx("noRankChanges", { month: MONTHS[r.prev].label }) : ""}</p>`}
+    </div>
+    ${membersOf(gk).includes(CONFIG.viewer) ? `<button class="btn" data-action="open-share">${tx("makeShareCard")}</button>` : ""}
+  </section>`;
+}
+
+/** The viewer's ranks this month, best first, for the share card. */
+function viewerRanks(gk) {
+  const scope = { kind: "month", mi: THIS };
+  return groupArtists(gk, scope).map(([a]) => {
+    const board = leaderboard(gk, a, scope), rank = rankOf(board, CONFIG.viewer);
+    return { artist: a, rank, plays: board[rank - 1]?.plays || 0 };
+  }).filter((r) => r.rank && r.plays > 0).sort((a, b) => a.rank - b.rank || b.plays - a.plays);
+}
+function renderShare() {
+  const gk = state.group, ranks = viewerRanks(gk);
+  if (!ranks.some((r) => r.artist === state.shareArtist)) state.shareArtist = ranks[0]?.artist || null;
+  return `
+  <section class="stack">
+    <h1>${tx("shareTitle")}</h1>
+    ${simTag()}
+    ${ranks.length ? `
+      <label class="field" for="share-artist">${tx("shareArtist")}
+        <select class="input" id="share-artist">${ranks.slice(0, 30).map((r) => `<option value="${esc(r.artist)}" ${r.artist === state.shareArtist ? "selected" : ""}>#${r.rank} · ${esc(r.artist)}</option>`).join("")}</select></label>
+      <canvas id="share-canvas" class="share-preview" width="1080" height="1920" role="img" aria-label="${esc(shareSentence(gk))}"></canvas>
+      <button class="btn" data-action="save-image">${tx("saveImage")}</button>` : `<p class="empty">${tx("shareNoPlays")}</p>`}
+  </section>`;
+}
+function shareInfo(gk) { return viewerRanks(gk).find((r) => r.artist === state.shareArtist); }
+function shareSentence(gk) { const s = shareInfo(gk); return s ? `${t("shareLead")} #${s.rank} ${s.artist} ${t("shareTail", { group: CONFIG.groups[gk].name })}` : ""; }
+
+/** Draw the 9:16 share card (1080x1920) onto the canvas. */
+function drawShareCard(canvas, gk) {
+  const ctx = canvas.getContext("2d"), s = shareInfo(gk);
+  if (!ctx || !s) return;
+  const W = canvas.width, H = canvas.height, F = (w, px) => `${w} ${px}px ${getComputedStyle(document.body).fontFamily}`;
+  ctx.fillStyle = "#14131C"; ctx.fillRect(0, 0, W, H);
+  const glow = ctx.createRadialGradient(W * 0.85, H * 0.12, 20, W * 0.85, H * 0.12, W * 0.9);
+  glow.addColorStop(0, "rgba(255,138,76,0.55)"); glow.addColorStop(1, "rgba(255,138,76,0)");
+  ctx.fillStyle = glow; ctx.fillRect(0, 0, W, H);
+  ctx.textBaseline = "alphabetic"; ctx.textAlign = "left";
+  ctx.fillStyle = "#FF8A4C"; ctx.font = F(900, 64); ctx.fillText(CONFIG.appName, 90, 170);
+  ctx.fillStyle = "#A7A3B5"; ctx.font = F(700, 40); ctx.fillText(MONTHS[THIS].label, 90, 230);
+  ctx.fillStyle = "#F4F1EC"; ctx.font = F(800, 96); ctx.fillText(t("shareLead"), 90, 640);
+  ctx.fillStyle = "#FF8A4C"; ctx.font = F(900, 300); ctx.fillText(`#${s.rank}`, 76, 930);
+  // Artist name: wrap, shrinking until it fits in three lines.
+  let size = 128, lines;
+  do { ctx.font = F(900, size); lines = wrapLines(ctx, s.artist, W - 180); size -= 8; } while (lines.length > 3 && size > 56);
+  ctx.fillStyle = "#F4F1EC"; let y = 1080;
+  for (const line of lines) { ctx.fillText(line, 90, y); y += size * 1.12; }
+  ctx.font = F(800, 72); for (const line of wrapLines(ctx, t("shareTail", { group: CONFIG.groups[gk].name }), W - 180)) { y += 10; ctx.fillText(line, 90, y + 40); y += 84; }
+  ctx.fillStyle = "#A7A3B5"; ctx.font = F(700, 48); ctx.fillText(t("sharePlays", { n: fmt(s.plays), month: MONTHS[THIS].short }), 90, y + 110);
+  // Group avatars
+  const members = membersOf(gk); let x = 90;
+  for (const pk of members) {
+    ctx.beginPath(); ctx.arc(x + 46, 1640, 46, 0, Math.PI * 2); ctx.fillStyle = colorOf(pk); ctx.fill();
+    ctx.lineWidth = 8; ctx.strokeStyle = pk === CONFIG.viewer ? "#F4F1EC" : "#14131C"; ctx.stroke();
+    ctx.fillStyle = "#14131C"; ctx.font = F(900, 44); ctx.textAlign = "center"; ctx.fillText(nameOf(pk).charAt(0), x + 46, 1656); ctx.textAlign = "left";
+    x += 112; if (x > W - 140) break;
+  }
+  ctx.fillStyle = "#A7A3B5"; ctx.font = F(700, 34); ctx.fillText(t("simLabel"), 90, 1820);
+}
+function wrapLines(ctx, text, max) {
+  const words = text.split(/\s+/), lines = []; let cur = "";
+  for (const w of words) { const next = cur ? cur + " " + w : w; if (ctx.measureText(next).width > max && cur) { lines.push(cur); cur = w; } else cur = next; }
+  if (cur) lines.push(cur);
+  return lines;
+}
+/** Save the card as PNG: the claude.ai viewer's save dialog when present, else a normal browser download. */
+async function saveImage() {
+  const canvas = $("#share-canvas");
+  if (!canvas) return;
+  const blob = await new Promise((res) => canvas.toBlob(res, "image/png"));
+  if (!blob) { toast(t("saveFailed")); return; }
+  const filename = `${CONFIG.appName.toLowerCase()}-${(state.shareArtist || "card").toLowerCase().replace(/[^a-z0-9]+/g, "-")}.png`;
+  const host = window.claude && typeof window.claude.use === "function" ? await window.claude.use("downloads").catch(() => null) : null;
+  if (host) {
+    try { await host.save({ filename, data: blob }); toast(t("saved")); }
+    catch (e) { toast(e && e.code === "declined" ? t("saveDeclined") : t("saveFailed")); }
+    return;
+  }
+  const url = URL.createObjectURL(blob), a = document.createElement("a");
+  a.href = url; a.download = filename; document.body.appendChild(a); a.click(); a.remove();
+  setTimeout(() => URL.revokeObjectURL(url), 4000);
+  toast(t("saved"));
+}
+
+function renderCompare() {
+  const groups = state.joined;
+  if (groups.length < 2) return `<section class="stack"><h1>${tx("compareTitle")}</h1><p class="empty">${tx("needTwoGroups")}</p><button class="btn" data-action="open-join">${tx("joinGroup")}</button></section>`;
+  if (!groups.includes(state.compareA)) state.compareA = state.group;
+  if (!groups.includes(state.compareB) || state.compareB === state.compareA) state.compareB = groups.find((g) => g !== state.compareA);
+  const side = (gk) => {
+    const sig = groupArtists(gk, { kind: "all" })[0], fan = leaderboard(gk, sig[0], { kind: "all" })[0];
+    return { gk, genre: groupSound(gk)[0]?.genre || t("genreOther"), sig: sig[0], fan };
+  };
+  const A = side(state.compareA), B = side(state.compareB);
+  const tot = (gk) => new Map(groupArtists(gk, { kind: "all" }).filter(([, n]) => n > 0));
+  const ta = tot(A.gk), tb = tot(B.gk);
+  const shared = [...ta].filter(([a]) => tb.has(a)).map(([a, n]) => [a, n + tb.get(a)]).sort((x, y) => y[1] - x[1]).slice(0, 8);
+  const sel = (id, val) => `<select class="input" id="${id}">${groups.map((g) => `<option value="${g}" ${g === val ? "selected" : ""}>${esc(CONFIG.groups[g].name)}</option>`).join("")}</select>`;
+  const col = (s) => `<div class="card">
+      <span class="eyebrow">${tx("topGenre")}</span><h3>${esc(cap(s.genre))}</h3>
+      <span class="eyebrow">${tx("signatureArtist")}</span><h3>${esc(s.sig)}</h3>
+      <span class="eyebrow">${tx("biggestFan")}</span><div class="row">${avatar(s.fan.pk, "sm")}<span class="small"><b>${esc(who(s.fan.pk))}</b> · ${fmt(s.fan.plays)}</span></div>
+    </div>`;
+  return `
+  <section class="stack">
+    <h1>${tx("compareTitle")}</h1>
+    ${realTag()}
+    <div class="two">${sel("compare-a", A.gk)}${sel("compare-b", B.gk)}</div>
+    <div class="two">${col(A)}${col(B)}</div>
+    <div class="card"><h2>${tx("sharedBetween")}</h2>
+      ${shared.length ? `<div class="chips">${shared.map(([a]) => `<span class="chip">${esc(a)}</span>`).join("")}</div>` : `<p class="muted">${tx("noSharedGroups")}</p>`}</div>
+  </section>`;
+}
+
+function renderJoin() {
+  return `
+  <section class="stack">
+    <h1>${tx("joinTitle")}</h1>
+    <p class="muted">${tx("joinHelp")}</p>
+    <div class="card">
+      <label class="field" for="join-code">${tx("joinPlaceholder")}
+        <input class="input" id="join-code" autocomplete="off" autocapitalize="characters" value="${esc(state.joinCode)}" placeholder="ROOMIES"></label>
+      <button class="btn" data-action="join">${tx("joinButton")}</button>
+      ${state.joinMessage ? `<p class="note" role="status">${esc(state.joinMessage)}</p>` : ""}
+    </div>
+    <div class="card"><h2>${tx("yourGroups")}</h2>
+      <div class="list">${state.joined.map((g) => `<div class="li"><div class="avs">${membersOf(g).slice(0, 4).map((pk) => avatar(pk, "sm")).join("")}</div><span class="grow name">${esc(CONFIG.groups[g].name)}</span><span class="small muted">${tx("homeMembers", { n: membersOf(g).length })}</span></div>`).join("")}</div>
+    </div>
+  </section>`;
+}
+
+/* =====================================================================================
+   APP SHELL: top bar, nav, sheet, toast, rendering and events
+   ===================================================================================== */
+const TABS = [["home", "navHome"], ["rank", "navRank"], ["match", "navMatch"], ["challenges", "navChallenges"], ["recap", "navRecap"]];
+const SCREENS = { home: renderHome, rank: renderRank, match: renderMatch, challenges: renderChallenges, recap: renderRecap, share: renderShare, compare: renderCompare, join: renderJoin };
+
+function render() {
+  const screen = state.overlay || state.tab;
+  $("#top").innerHTML = state.overlay
+    ? `<button class="back" data-action="close-overlay">${icon("back")}${tx("back")}</button><span class="brand">${brandHtml()}</span>`
+    : `<span class="brand">${brandHtml()}</span><button class="switcher" data-action="open-switcher" aria-haspopup="dialog"><span>${esc(CONFIG.groups[state.group].name)}</span>${icon("chevron")}</button>`;
+  $("#screen").innerHTML = SCREENS[screen]();
+  $("#nav").innerHTML = TABS.map(([k, label]) => `<button data-action="tab" data-value="${k}" ${!state.overlay && state.tab === k ? 'aria-current="page"' : ""}>${icon(k, "")}${tx(label)}</button>`).join("");
+  if (screen === "share" && $("#share-canvas")) drawShareCard($("#share-canvas"), state.group);
+  save();
+}
+function brandHtml() { const n = CONFIG.appName, i = Math.ceil(n.length / 2); return /^Jam/.test(n) ? `Jam<b>${esc(n.slice(3))}</b>` : `${esc(n.slice(0, i))}<b>${esc(n.slice(i))}</b>`; }
+
+function openSwitcher() {
+  const el = $("#sheet");
+  el.innerHTML = `<div class="sheet-backdrop" data-action="close-sheet"><div class="sheet" role="dialog" aria-modal="true" aria-label="${tx("yourGroups")}">
+    <span class="eyebrow">${tx("yourGroups")}</span>
+    <div class="list">${state.joined.map((g) => `<div class="li"><button data-action="switch-group" data-value="${g}"><div class="avs">${membersOf(g).slice(0, 3).map((pk) => avatar(pk, "sm")).join("")}</div><span class="grow">${esc(CONFIG.groups[g].name)}</span>${g === state.group ? '<span class="pill new">✓</span>' : ""}</button></div>`).join("")}</div>
+    <button class="btn" data-action="open-join">${tx("joinGroup")}</button>
+  </div></div>`;
+  el.hidden = false;
+  el.querySelector("button")?.focus();
+}
+function closeSheet() { $("#sheet").hidden = true; $("#sheet").innerHTML = ""; }
+
+let toastTimer;
+function toast(msg) { const el = $("#toast"); el.textContent = msg; el.hidden = false; clearTimeout(toastTimer); toastTimer = setTimeout(() => { el.hidden = true; }, 2600); }
+function go(tab) { state.tab = tab; state.overlay = null; render(); window.scrollTo(0, 0); }
+function overlay(name) { closeSheet(); state.overlay = name; render(); window.scrollTo(0, 0); }
+
+const ACTIONS = {
+  "tab": (v) => go(v),
+  "close-overlay": () => { state.overlay = null; render(); },
+  "open-switcher": openSwitcher,
+  "close-sheet": (v, e) => { if (e.target.matches(".sheet-backdrop")) closeSheet(); },   // only taps outside the sheet
+  "switch-group": (v) => { state.group = v; closeSheet(); state.newAlertDay = null; state.rankArtist = null; render(); },
+  "open-join": () => { state.joinMessage = null; state.joinCode = ""; overlay("join"); },
+  "open-compare": () => overlay("compare"),
+  "open-share": () => overlay("share"),
+  "join": () => {
+    const code = ($("#join-code")?.value || "").trim().toUpperCase();
+    state.joinCode = code;
+    const gk = Object.keys(CONFIG.groups).find((k) => CONFIG.groups[k].code.toUpperCase() === code);
+    if (!code) state.joinMessage = t("joinEmpty");
+    else if (!gk) state.joinMessage = t("joinBad", { code });
+    else if (state.joined.includes(gk)) state.joinMessage = t("joinAlready", { group: CONFIG.groups[gk].name });
+    else { state.joined.push(gk); state.group = gk; state.tab = "home"; state.rankArtist = null; state.newAlertDay = null; state.joinMessage = t("joinOk", { group: CONFIG.groups[gk].name }); toast(state.joinMessage); }
+    render();
+  },
+  "simulate-day": () => {
+    if (state.day >= MONTHS[THIS].days) return;
+    state.day += 1;
+    const fresh = alertsFor(state.group, state.day).filter((a) => a.day === state.day);
+    state.newAlertDay = fresh.length ? state.day : -1;
+    render();
+    if (fresh.length) toast(alertText(fresh[fresh.length - 1]));
+  },
+  "reset-day": () => { state.day = CONFIG.sim.startDay; state.newAlertDay = null; render(); },
+  "reset-demo": () => { clearSaved(); Object.assign(state, { day: CONFIG.sim.startDay, joined: [...CONFIG.startJoined], group: CONFIG.startJoined[0], challenges: structuredClone(CONFIG.challenges), newAlertDay: null, challengeForm: null }); go("home"); },
+  "rank-scope": (v) => { state.rankScope = v; render(); },
+  "recap-scope": (v) => { state.recapScope = v; render(); },
+  "pick-artist": (v) => { state.rankArtist = v; render(); $("#board")?.scrollIntoView({ block: "nearest" }); },
+  "new-challenge": () => { state.challengeForm = { type: "duel" }; render(); },
+  "close-form": () => { state.challengeForm = null; render(); },
+  "create-challenge": () => {
+    const gk = state.group, members = membersOf(gk), me = members.includes(CONFIG.viewer) ? CONFIG.viewer : members[0];
+    const type = $("#ch-type").value, artist = $("#ch-artist").value;
+    const target = Math.max(1, Math.min(100000, parseInt($("#ch-target")?.value, 10) || 1));
+    const stakes = ($("#ch-stakes").value || "").trim().slice(0, 80) || t("defaultStakes");
+    const ch = type === "goal" ? { type, artist, target, stakes } : { type, a: me, b: $("#ch-b").value, artist, stakes, ...(type === "recommend" ? { target } : {}) };
+    const list = (state.challenges[gk] = (state.challenges[gk] || []).filter((c) => validChallenge(c, gk)));
+    if (list.length >= CONFIG.freeChallengeLimit || !validChallenge(ch, gk)) { render(); return; }
+    list.push(ch); state.challengeForm = null; render(); toast(t("challengeCreated"));
+  },
+  "end-challenge": (v) => { const gk = state.group; state.challenges[gk] = (state.challenges[gk] || []).filter((c) => validChallenge(c, gk)); state.challenges[gk].splice(Number(v), 1); render(); toast(t("challengeEnded")); },
+  "save-image": () => saveImage(),
+};
+
+document.addEventListener("click", (e) => {
+  const el = e.target.closest("[data-action]");
+  if (!el || el.disabled) return;
+  const fn = ACTIONS[el.dataset.action];
+  if (fn) fn(el.dataset.value, e);
+});
+document.addEventListener("keydown", (e) => {
+  if (e.key === "Escape" && !$("#sheet").hidden) closeSheet();
+  if (e.key === "Enter" && e.target.id === "join-code") ACTIONS.join();
+});
+document.addEventListener("input", (e) => {
+  if (e.target.id === "artist-search") { state.rankSearch = e.target.value; $("#artist-list").innerHTML = artistListHtml(groupArtists(state.group, scopeOf(state.rankScope))); }
+});
+document.addEventListener("change", (e) => {
+  const id = e.target.id, v = e.target.value;
+  if (id === "match-a") { state.matchA = v; render(); }
+  else if (id === "match-b") { state.matchB = v; render(); }
+  else if (id === "compare-a") { state.compareA = v; render(); }
+  else if (id === "compare-b") { state.compareB = v; render(); }
+  else if (id === "share-artist") { state.shareArtist = v; render(); }
+  else if (id === "ch-type") { state.challengeForm = { type: v }; render(); }
+});
+
+render();
+</script>
