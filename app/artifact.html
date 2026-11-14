@@ -107,9 +107,14 @@ p { margin: 0; }
 .nav svg { width: 22px; height: 22px; }
 .ico { width: 18px; height: 18px; flex: none; }
 
-/* Floating day button (bottom-right, above the tab bar) */
-.fab { position: fixed; z-index: 6; right: max(16px, calc((100vw - 430px) / 2 + 16px));
-  bottom: calc(var(--nav-h) + 14px + env(safe-area-inset-bottom, 0px)); height: 48px; padding: 0 16px 0 12px;
+/* Day controls (bottom-right, above the tab bar): back a day + forward a day */
+.fab-dock { position: fixed; z-index: 6; right: max(16px, calc((100vw - 430px) / 2 + 16px));
+  bottom: calc(var(--nav-h) + 14px + env(safe-area-inset-bottom, 0px)); display: flex; gap: 8px; align-items: center; }
+.fab-back { width: 48px; height: 48px; border-radius: 50%; border: 1px solid var(--line); background: var(--raise); color: var(--fg);
+  display: grid; place-items: center; box-shadow: 0 2px 8px #0008; }
+.fab-back svg { width: 20px; height: 20px; }
+.fab-back:disabled { color: var(--muted); opacity: 0.5; cursor: not-allowed; }
+.fab { height: 48px; padding: 0 16px 0 12px;
   display: inline-flex; align-items: center; gap: 8px; border: 0; border-radius: 999px; font-weight: 900; font-size: 14px;
   background: linear-gradient(135deg, #FF8A4C, #FF5E8A); color: var(--accent-ink); box-shadow: 0 10px 28px #FF8A4C55, 0 2px 8px #0008; }
 .fab svg { width: 20px; height: 20px; }
@@ -149,7 +154,7 @@ p { margin: 0; }
   @keyframes pop { from { transform: scale(0.96); } }
   @keyframes glow { 0% { box-shadow: 0 0 0 0 #FF8A4C88; } 100% { box-shadow: 0 0 0 16px #FF8A4C00; } }
   /* Day button: squash-and-pop, and the day number flips up */
-  .fab.tick { animation: tick 0.5s var(--spring); }
+  .fab.tick, .fab-back.tick { animation: tick 0.5s var(--spring); }
   .fab span { display: inline-block; }
   .fab.tick span { animation: flip 0.4s var(--ease); }
   @keyframes tick { 0% { transform: scale(1); } 35% { transform: scale(0.88); } 70% { transform: scale(1.08); } 100% { transform: scale(1); } }
@@ -176,7 +181,7 @@ p { margin: 0; }
   <header class="top" id="top"></header>
   <main id="screen" tabindex="-1"></main>
 </div>
-<button class="fab" id="fab" data-action="simulate-day"></button>
+<div class="fab-dock" id="fab-dock"><button class="fab-back" id="fab-back" data-action="prev-day"></button><button class="fab" id="fab" data-action="simulate-day"></button></div>
 <nav class="nav" id="nav" aria-label="Main"></nav>
 <div id="sheet" hidden></div>
 <div id="toast" role="status" aria-live="polite" hidden></div>
@@ -290,6 +295,7 @@ const TEXT = {
   groupSound: "Group Sound", groupSoundSub: "Top genres, with every member weighted equally", leansHardest: "{name} leans hardest ({pct})", leansHardestYou: "You lean hardest ({pct})",
   compareGroups: "Compare with another group",
   fabDay: "Day {day}", fabLabel: "Simulate a day (now day {day} of {days})",
+  prevDay: "Go back a day (now day {day} of {days})", firstDay: "First day of the month",
   resetDemo: "Reset demo",
   // Group switcher and join
   yourGroups: "Your groups", joinGroup: "Join a group", joinTitle: "Join a group",
@@ -387,6 +393,7 @@ const ICONS = {
 };
 const icon = (name, cls = "ico") => `<svg class="${cls}" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">${ICONS[name]}</svg>`;
 const SKIP = '<svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M4 6v12l8.5-6zM12.5 6v12L21 12z"/></svg>';
+const REWIND = '<svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M20 6v12l-8.5-6zM11.5 6v12L3 12z"/></svg>';
 const DONE = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12.5l4.5 4.5L19 7"/></svg>';
 const CROWN = '<svg class="crown" viewBox="0 0 24 24" fill="currentColor" aria-label="Crown"><path d="M3 8l4.5 4L12 5l4.5 7L21 8l-2 11H5z"/></svg>';
 
@@ -1040,7 +1047,7 @@ function confetti() {
   raf(frame);
 }
 /** Replay the Day button's squash-and-pop. */
-function tickFab() { const f = $("#fab"); if (!MOTION) return; f.classList.remove("tick"); void f.offsetWidth; f.classList.add("tick"); }
+function tickFab(id = "fab") { const f = $("#" + id); if (!MOTION) return; f.classList.remove("tick"); void f.offsetWidth; f.classList.add("tick"); }
 
 /* =====================================================================================
    APP SHELL: top bar, nav, sheet, toast, rendering and events
@@ -1067,6 +1074,12 @@ function render() {
   fab.innerHTML = `${done ? DONE : SKIP}<span>${tx("fabDay", { day: state.day })}</span>`;
   fab.setAttribute("aria-label", done ? t("monthDone") : t("fabLabel", { day: state.day, days: m.days }));
   fab.title = fab.getAttribute("aria-label");
+  const back = $("#fab-back"), first = state.day <= 1;
+  $("#fab-dock").hidden = !!state.overlay;
+  back.disabled = first;
+  back.innerHTML = REWIND;
+  back.setAttribute("aria-label", first ? t("firstDay") : t("prevDay", { day: state.day, days: m.days }));
+  back.title = back.getAttribute("aria-label");
   $("#nav").innerHTML = TABS.map(([k, label]) => `<button data-action="tab" data-value="${k}" ${!state.overlay && state.tab === k ? 'aria-current="page"' : ""}>${icon(k, "")}${tx(label)}</button>`).join("");
   if (screen === "share" && $("#share-canvas")) {
     // Drawn on a hidden canvas, shown as an <img> so long-press / right-click "Save image" works everywhere.
@@ -1123,6 +1136,13 @@ const ACTIONS = {
     if (state.day === MONTHS[THIS].days) confetti();   // results day
     if (fresh.length) toast(alertText(fresh[fresh.length - 1]));
   },
+  "prev-day": () => {
+    if (state.day <= 1) return;
+    state.day -= 1;
+    state.newAlertDay = null;   // stepping back shows the alerts as of that day, nothing "new"
+    render();
+    tickFab("fab-back");
+  },
   "reset-day": () => { state.day = CONFIG.sim.startDay; state.newAlertDay = null; render(); },
   "reset-demo": () => { clearSaved(); Object.assign(state, { day: CONFIG.sim.startDay, joined: [...CONFIG.startJoined], group: CONFIG.startJoined[0], challenges: structuredClone(CONFIG.challenges), newAlertDay: null, challengeForm: null }); go("home"); },
   "rank-scope": (v) => { state.rankScope = v; render(); },
@@ -1150,7 +1170,7 @@ document.addEventListener("click", (e) => {
   const fn = ACTIONS[el.dataset.action];
   if (fn) fn(el.dataset.value, e);
 });
-$("#fab").addEventListener("animationend", (e) => { if (e.target.id === "fab") e.target.classList.remove("tick"); });
+for (const id of ["fab", "fab-back"]) $("#" + id).addEventListener("animationend", (e) => { if (e.target.id === id) e.target.classList.remove("tick"); });
 document.addEventListener("keydown", (e) => {
   if (e.key === "Escape" && !$("#sheet").hidden) closeSheet();
   if (e.key === "Enter" && e.target.id === "join-code") ACTIONS.join();
