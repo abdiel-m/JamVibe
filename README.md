@@ -40,8 +40,6 @@ The scripts expect the dataset zip at `~/archive (1).zip`, or a path given as th
 | 2. US taste clusters (k-means, k=9) and three friend groups | `friends.py` | `friend_groups.json` |
 | 3. Real top-50 artists written into the app | `app/build_app.py` | `app/index.html`, `app/artifact.html` |
 
-`simulate_month.py`, `build.py` and `demo.template.html` build the earlier one-page demo (`demo.html`).
-
 Python 3 standard library only. No packages to install.
 
 ## Credits and licenses
