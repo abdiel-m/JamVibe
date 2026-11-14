@@ -1,13 +1,15 @@
 <title>JamVibe</title>
 <meta name="claude:viewport-fit-sides" content="cover">
 <style>
-/* Layout: one phone-width column (390px target), centered on desktop; screens scroll above a fixed bottom nav. */
+/* Layout: phone-width column centered on desktop. Streaming-app patterns: big titles, group-tinted gradient wash
+   at the top, side-scrolling shelves, a mini "race player" above a frosted tab bar. JamVibe orange stays the brand. */
 :root {
-  --bg: #14131C; --card: #1E1D29; --line: #2C2B3A; --fg: #F4F1EC; --muted: #A7A3B5; --accent: #FF8A4C;
-  --accent-ink: #14131C; --raise: #262534; --good: #5FD3B4;
+  --bg: #0B0B10; --bg-2: #121219; --card: #18181F; --card-hi: #23232D; --line: #2B2B36;
+  --fg: #FFFFFF; --muted: #A4A3B2; --accent: #FF8A4C; --accent-2: #FF5E8A; --accent-ink: #0B0B10; --good: #5FD3B4;
+  --hero-a: #FF8A4C59;   /* set per group from CONFIG.groups[...].color */
   --font: ui-rounded, "SF Pro Rounded", "Nunito", "Varela Round", system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
   --mono: ui-monospace, "SF Mono", Menlo, Consolas, monospace;
-  --r: 18px; --nav-h: 64px;
+  --r: 14px; --nav-h: 62px; --mini-h: 58px;
   color-scheme: dark;
 }
 * { box-sizing: border-box; }
@@ -16,107 +18,150 @@ body { margin: 0; background: var(--bg); color: var(--fg); font: 15px/1.45 var(-
 button, input, select { font: inherit; color: inherit; }
 button { cursor: pointer; }
 :focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
-.app { max-width: 430px; margin: 0 auto; min-height: 100%; position: relative;
+.app { max-width: 430px; margin: 0 auto; min-height: 100%; position: relative; isolation: isolate;
   padding-left: max(16px, env(safe-area-inset-left, 0px)); padding-right: max(16px, env(safe-area-inset-right, 0px));
-  padding-block: 12px calc(var(--nav-h) + 28px + env(safe-area-inset-bottom, 0px)); }
-@media (min-width: 560px) { body { background: #0E0D14; } .app { background: var(--bg); border-inline: 1px solid var(--line); } }
-h1, h2, h3 { margin: 0; font-weight: 800; letter-spacing: -0.01em; line-height: 1.15; text-wrap: balance; }
-h1 { font-size: 26px; } h2 { font-size: 19px; } h3 { font-size: 15px; font-weight: 700; }
+  padding-block: 10px calc(var(--nav-h) + var(--mini-h) + 36px + env(safe-area-inset-bottom, 0px)); }
+.app::before { content: ""; position: absolute; inset: 0 0 auto; height: 340px; z-index: -1; pointer-events: none;
+  background: linear-gradient(180deg, var(--hero-a), transparent); }
+@media (min-width: 560px) { body { background: #050507; } .app { background: var(--bg); border-inline: 1px solid var(--line); } }
+h1, h2, h3 { margin: 0; font-weight: 900; letter-spacing: -0.02em; line-height: 1.1; text-wrap: balance; }
+h1 { font-size: 32px; } h2 { font-size: 20px; font-weight: 800; } h3 { font-size: 15px; font-weight: 800; }
 p { margin: 0; }
 .muted { color: var(--muted); }
 .small { font-size: 13px; }
 .num { font-family: var(--mono); font-variant-numeric: tabular-nums; }
-.stack { display: grid; gap: 14px; }
+.stack { display: grid; gap: 16px; min-width: 0; }
 .row { display: flex; align-items: center; gap: 10px; min-width: 0; }
 .between { justify-content: space-between; }
 .wrap { flex-wrap: wrap; }
 .grow { flex: 1; min-width: 0; }
 
 /* Top bar */
-.top { display: flex; align-items: center; justify-content: space-between; gap: 10px; padding-block: 6px 14px; }
-.brand { font-weight: 900; font-size: 20px; letter-spacing: -0.02em; }
-.brand b { color: var(--accent); }
-.switcher { display: inline-flex; align-items: center; gap: 6px; background: var(--card); border: 1px solid var(--line); border-radius: 999px; padding: 7px 12px; font-weight: 700; max-width: 62%; }
+.top { display: flex; align-items: center; justify-content: space-between; gap: 10px; padding-block: 6px 12px; }
+.brand { font-weight: 900; font-size: 20px; letter-spacing: -0.03em; }
+.brand b { background: linear-gradient(135deg, var(--accent), var(--accent-2)); -webkit-background-clip: text; background-clip: text; color: transparent; }
+.switcher { display: inline-flex; align-items: center; gap: 6px; background: #FFFFFF1A; border: 0; border-radius: 999px; padding: 7px 12px; font-weight: 800; max-width: 62%; backdrop-filter: blur(12px); }
 .switcher span { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-.back { background: none; border: 0; padding: 6px 0; color: var(--muted); font-weight: 700; display: inline-flex; gap: 4px; align-items: center; }
+.back { background: none; border: 0; padding: 6px 0; color: var(--fg); font-weight: 800; display: inline-flex; gap: 4px; align-items: center; }
 
-/* Cards and pieces */
-.card { background: var(--card); border: 1px solid var(--line); border-radius: var(--r); padding: 16px; display: grid; gap: 12px; min-width: 0; }
-.card.hot { border-color: var(--accent); }
-.eyebrow { font-size: 11px; font-weight: 800; letter-spacing: 0.08em; text-transform: uppercase; color: var(--muted); }
-.sim { display: inline-flex; align-items: center; gap: 6px; font-size: 12px; font-weight: 700; color: var(--accent); background: #FF8A4C1A; border-radius: 999px; padding: 4px 10px; justify-self: start; }
-.real { color: var(--good); background: #5FD3B41A; }
-.btn { border: 0; border-radius: 14px; padding: 12px 16px; font-weight: 800; background: var(--accent); color: var(--accent-ink); }
-.btn.ghost { background: var(--raise); color: var(--fg); border: 1px solid var(--line); }
-.btn.small { padding: 8px 12px; font-size: 13px; border-radius: 12px; }
+/* Surfaces */
+.card { background: var(--card); border: 0; border-radius: var(--r); padding: 16px; display: grid; gap: 12px; min-width: 0; }
+.card.hot { box-shadow: 0 0 0 2px var(--accent) inset; }
+.card.race { background: linear-gradient(135deg, #FF8A4C2E, #FF5E8A1F), var(--card); }
+.eyebrow { font-size: 12px; font-weight: 800; letter-spacing: 0.02em; color: var(--muted); }
+.section-h { display: flex; align-items: baseline; justify-content: space-between; gap: 10px; margin-top: 6px; }
+.sim { display: inline-flex; align-items: center; gap: 6px; font-size: 11px; font-weight: 800; color: var(--accent); background: #FF8A4C1F; border-radius: 999px; padding: 4px 10px; justify-self: start; white-space: nowrap; }
+.real { color: var(--good); background: #5FD3B41F; }
+.btn { border: 0; border-radius: 999px; padding: 13px 20px; font-weight: 900; background: var(--accent); color: var(--accent-ink); }
+.btn.ghost { background: transparent; color: var(--fg); box-shadow: 0 0 0 1px #FFFFFF59 inset; }
+.btn.small { padding: 8px 14px; font-size: 13px; }
 .btn:disabled { opacity: 0.45; cursor: not-allowed; }
-.link { background: none; border: 0; padding: 0; color: var(--accent); font-weight: 700; }
-.seg { display: grid; grid-auto-flow: column; grid-auto-columns: 1fr; background: var(--card); border: 1px solid var(--line); border-radius: 14px; padding: 4px; gap: 4px; }
-.seg button { border: 0; background: none; border-radius: 10px; padding: 8px 6px; font-weight: 700; color: var(--muted); font-size: 13px; }
-.seg button[aria-pressed="true"] { background: var(--raise); color: var(--fg); }
-.field { display: grid; gap: 6px; font-size: 13px; font-weight: 700; color: var(--muted); }
-.input, select.input { width: 100%; background: var(--raise); border: 1px solid var(--line); border-radius: 12px; padding: 11px 12px; color: var(--fg); font-weight: 600; }
-.bar { height: 8px; background: var(--raise); border-radius: 999px; overflow: hidden; }
-.bar i { display: block; height: 100%; background: var(--accent); border-radius: 999px; }
+.link { background: none; border: 0; padding: 0; color: var(--muted); font-weight: 800; text-decoration: underline; text-underline-offset: 3px; }
+/* Filter chips (Rank / Recap scope) */
+.seg { display: flex; flex-wrap: wrap; gap: 8px; }
+.seg button { border: 0; background: var(--card-hi); border-radius: 999px; padding: 8px 14px; font-weight: 800; color: var(--fg); font-size: 13px; }
+.seg button[aria-pressed="true"] { background: var(--accent); color: var(--accent-ink); }
+.field { display: grid; gap: 6px; font-size: 13px; font-weight: 800; color: var(--muted); }
+.input, select.input { width: 100%; background: var(--card-hi); border: 0; border-radius: 10px; padding: 12px; color: var(--fg); font-weight: 700; }
+.bar { height: 4px; background: #FFFFFF26; border-radius: 999px; overflow: hidden; }
+.bar i { display: block; height: 100%; background: var(--fg); border-radius: 999px; }
+.card.race .bar i, .mini .prog i { background: linear-gradient(90deg, var(--accent), var(--accent-2)); }
+
+/* People */
 .av { --c: var(--accent); width: 34px; height: 34px; border-radius: 50%; background: var(--c); color: var(--accent-ink); display: inline-grid; place-items: center; font-weight: 900; font-size: 14px; flex: none; }
 .av.sm { width: 26px; height: 26px; font-size: 11px; }
-.av.lg { width: 48px; height: 48px; font-size: 19px; }
+.av.lg { width: 52px; height: 52px; font-size: 20px; }
 .avs { display: flex; }
-.avs .av { border: 2px solid var(--bg); margin-left: -8px; }
+.avs .av { box-shadow: 0 0 0 2px var(--bg); margin-left: -8px; }
 .avs .av:first-child { margin-left: 0; }
-.members { display: flex; flex-wrap: wrap; gap: 12px; }
-.member { display: grid; justify-items: center; gap: 4px; font-size: 12px; color: var(--muted); width: 52px; text-align: center; }
+.members { display: flex; gap: 14px; overflow-x: auto; padding-bottom: 2px; scrollbar-width: none; }
+.member { display: grid; justify-items: center; gap: 6px; font-size: 12px; font-weight: 700; color: var(--muted); width: 56px; flex: none; text-align: center; }
+
+/* Cover art: generated gradient tiles (no artist images in the data) */
+.art { display: inline-grid; place-items: center; flex: none; border-radius: 6px; background: var(--art); color: #FFFFFFE6; font-weight: 900; letter-spacing: -0.02em; text-shadow: 0 1px 8px #0005; box-shadow: 0 6px 18px #0007; overflow: hidden; }
+.art.fluid { width: 100%; aspect-ratio: 1; font-size: 30px; border-radius: 8px; }
+
+/* Quick shortcuts (2-column grid) */
+.quick { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+.quick button { display: flex; align-items: center; gap: 10px; background: #FFFFFF14; border: 0; border-radius: 6px; overflow: hidden; padding: 0 10px 0 0; height: 56px; font-weight: 800; font-size: 13px; text-align: left; min-width: 0; }
+.quick button span:last-child { overflow: hidden; text-overflow: ellipsis; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; }
+.quick .art { border-radius: 0; box-shadow: none; }
+
+/* Shelves (side-scrolling rows of tiles) */
+.shelf { display: grid; grid-auto-flow: column; grid-auto-columns: minmax(128px, 38%); gap: 14px; overflow-x: auto; scroll-snap-type: x mandatory; padding-bottom: 6px; scrollbar-width: none; min-width: 0; }
+.shelf::-webkit-scrollbar, .members::-webkit-scrollbar { display: none; }
+.tile { display: grid; gap: 6px; align-content: start; background: none; border: 0; padding: 0; text-align: left; scroll-snap-align: start; min-width: 0; }
+.tile .name { font-size: 14px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+
+/* Lists */
 .list { display: grid; gap: 2px; }
-.li { display: flex; align-items: center; gap: 10px; padding: 9px 0; border-bottom: 1px solid var(--line); min-width: 0; }
-.li:last-child { border-bottom: 0; }
-.rank { width: 22px; font-weight: 800; color: var(--muted); text-align: center; flex: none; }
-.name { font-weight: 700; overflow-wrap: anywhere; }
+.li { display: flex; align-items: center; gap: 12px; padding: 8px 0; min-width: 0; }
+.rank { width: 20px; font-weight: 800; color: var(--muted); text-align: center; flex: none; font-variant-numeric: tabular-nums; }
+.name { font-weight: 800; overflow-wrap: anywhere; }
 .crown { width: 18px; height: 18px; color: #F2C14E; flex: none; }
-.pill { font-size: 12px; font-weight: 700; padding: 3px 9px; border-radius: 999px; background: var(--raise); color: var(--muted); white-space: nowrap; }
+.pill { font-size: 12px; font-weight: 800; padding: 3px 10px; border-radius: 999px; background: #FFFFFF1A; color: var(--fg); white-space: nowrap; }
 .pill.new { background: var(--accent); color: var(--accent-ink); }
 .alert { display: flex; gap: 10px; align-items: flex-start; }
-.alert p { font-weight: 600; }
-.big { font-size: 40px; font-weight: 900; line-height: 1; letter-spacing: -0.03em; }
-.chips { display: flex; flex-wrap: wrap; gap: 6px; }
-.chip { border: 1px solid var(--line); background: var(--raise); border-radius: 999px; padding: 6px 11px; font-size: 13px; font-weight: 700; color: var(--fg); }
-.chip[aria-pressed="true"] { background: var(--accent); color: var(--accent-ink); border-color: var(--accent); }
-.scroll-list { max-height: 260px; overflow-y: auto; display: grid; gap: 6px; padding-right: 2px; }
-.artist-btn { display: flex; justify-content: space-between; gap: 10px; text-align: left; border: 1px solid var(--line); background: var(--raise); border-radius: 12px; padding: 9px 12px; font-weight: 700; }
-.artist-btn[aria-pressed="true"] { border-color: var(--accent); }
+.alert p { font-weight: 700; }
+.big { font-size: 34px; font-weight: 900; line-height: 1.05; letter-spacing: -0.03em; overflow-wrap: anywhere; }
+.chips { display: flex; flex-wrap: wrap; gap: 8px; }
+.chip { border: 0; background: var(--card-hi); border-radius: 999px; padding: 7px 12px; font-size: 13px; font-weight: 800; color: var(--fg); }
+.chip[aria-pressed="true"] { background: var(--accent); color: var(--accent-ink); }
+.scroll-list { max-height: 300px; overflow-y: auto; display: grid; gap: 2px; padding-right: 2px; }
+.artist-btn { display: flex; align-items: center; gap: 12px; text-align: left; border: 0; background: none; border-radius: 8px; padding: 6px; font-weight: 800; min-width: 0; }
+.artist-btn:hover { background: #FFFFFF0F; }
+.artist-btn[aria-pressed="true"] { background: #FFFFFF1A; }
+.artist-btn .name { flex: 1; min-width: 0; }
+.board-head { display: flex; gap: 16px; align-items: flex-end; }
+.board-head h2 { font-size: 26px; font-weight: 900; overflow-wrap: anywhere; }
 .two { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
 .two > * { min-width: 0; }
-.ring { --p: 50; width: 120px; height: 120px; border-radius: 50%; display: grid; place-items: center; margin: 4px auto;
-  background: conic-gradient(var(--accent) calc(var(--p) * 1%), var(--raise) 0); }
-.ring div { width: 96px; height: 96px; border-radius: 50%; background: var(--card); display: grid; place-items: center; font-size: 28px; font-weight: 900; }
+.ring { --p: 50; width: 132px; height: 132px; border-radius: 50%; display: grid; place-items: center; margin: 4px auto;
+  background: conic-gradient(var(--accent), var(--accent-2) calc(var(--p) * 1%), #FFFFFF1F 0); }
+.ring div { width: 108px; height: 108px; border-radius: 50%; background: var(--card); display: grid; place-items: center; font-size: 30px; font-weight: 900; }
 .award { display: grid; grid-template-columns: auto 1fr; gap: 12px; align-items: center; }
-.share-preview { width: 100%; max-width: 270px; aspect-ratio: 9 / 16; height: auto; border-radius: 18px; border: 1px solid var(--line); display: block; margin: 0 auto; background: var(--bg); }
-.note { font-size: 13px; color: var(--muted); background: var(--raise); border-radius: 12px; padding: 10px 12px; }
+.share-preview { width: 100%; max-width: 270px; aspect-ratio: 9 / 16; height: auto; border-radius: 16px; display: block; margin: 0 auto; background: var(--bg); box-shadow: 0 18px 48px #000A; }
+.note { font-size: 13px; color: var(--fg); background: #FFFFFF14; border-radius: 10px; padding: 10px 12px; font-weight: 700; }
 .empty { text-align: center; color: var(--muted); padding: 18px 8px; }
 
-/* Bottom nav */
+/* Mini race player + frosted tab bar */
+.mini { position: fixed; z-index: 6; left: 50%; transform: translateX(-50%); width: min(calc(100% - 16px), 414px);
+  bottom: calc(var(--nav-h) + 8px + env(safe-area-inset-bottom, 0px)); height: var(--mini-h);
+  display: flex; align-items: center; gap: 10px; padding: 8px 10px 10px; border-radius: 10px;
+  background: linear-gradient(90deg, var(--hero-a), #2A2733), #2A2733; box-shadow: 0 10px 30px #0009; }
+.mini .art { border-radius: 4px; box-shadow: none; }
+.mini-t { font-weight: 900; font-size: 14px; }
+.mini-s { font-size: 12px; color: #FFFFFFB3; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.mini .play { width: 38px; height: 38px; border-radius: 50%; border: 0; background: var(--fg); color: var(--bg); display: grid; place-items: center; flex: none; }
+.mini .play:disabled { opacity: 0.5; cursor: not-allowed; }
+.mini .play svg { width: 18px; height: 18px; }
+.mini .prog { position: absolute; left: 10px; right: 10px; bottom: 4px; height: 2px; background: #FFFFFF33; border-radius: 2px; overflow: hidden; }
+.mini .prog i { display: block; height: 100%; }
 .nav { position: fixed; bottom: 0; left: 50%; transform: translateX(-50%); width: min(100%, 430px); z-index: 5;
-  background: #14131CF2; border-top: 1px solid var(--line); display: grid; grid-template-columns: repeat(5, 1fr);
-  padding: 6px max(8px, env(safe-area-inset-left, 0px)) calc(6px + env(safe-area-inset-bottom, 0px)); backdrop-filter: blur(10px); }
-.nav button { border: 0; background: none; display: grid; justify-items: center; gap: 2px; padding: 6px 0; color: var(--muted); font-size: 11px; font-weight: 700; border-radius: 12px; }
-.nav button[aria-current="page"] { color: var(--accent); }
-.nav svg { width: 22px; height: 22px; }
+  background: #0B0B10D9; display: grid; grid-template-columns: repeat(5, 1fr); backdrop-filter: blur(20px) saturate(1.4); -webkit-backdrop-filter: blur(20px) saturate(1.4);
+  padding: 6px max(8px, env(safe-area-inset-left, 0px)) calc(6px + env(safe-area-inset-bottom, 0px)); }
+.nav button { border: 0; background: none; display: grid; justify-items: center; gap: 3px; padding: 6px 0; color: var(--muted); font-size: 10.5px; font-weight: 800; }
+.nav button[aria-current="page"] { color: var(--fg); }
+.nav button[aria-current="page"] svg { color: var(--accent); }
+.nav svg { width: 24px; height: 24px; }
 .ico { width: 18px; height: 18px; flex: none; }
 
 /* Sheet and toast */
-.sheet-backdrop { position: fixed; inset: 0; background: #0009; z-index: 10; display: grid; align-items: end; justify-items: center; }
-.sheet { width: min(100%, 430px); background: var(--card); border: 1px solid var(--line); border-bottom: 0; border-radius: 22px 22px 0 0;
+.sheet-backdrop { position: fixed; inset: 0; background: #000A; z-index: 10; display: grid; align-items: end; justify-items: center; }
+.sheet { width: min(100%, 430px); background: var(--bg-2); border-radius: 16px 16px 0 0;
   padding: 18px max(16px, env(safe-area-inset-left, 0px)) calc(20px + env(safe-area-inset-bottom, 0px)); display: grid; gap: 10px; }
-.sheet .li { padding: 12px 0; }
-.sheet .li button { all: unset; cursor: pointer; display: flex; gap: 10px; align-items: center; width: 100%; font-weight: 700; }
-#toast { position: fixed; left: 50%; transform: translateX(-50%); bottom: calc(var(--nav-h) + 22px + env(safe-area-inset-bottom, 0px)); z-index: 20;
-  background: var(--fg); color: var(--bg); padding: 10px 16px; border-radius: 999px; font-weight: 700; font-size: 14px; max-width: calc(100% - 32px); text-align: center; }
-@media (prefers-reduced-motion: no-preference) { .card.hot { animation: pop 0.5s ease-out; } @keyframes pop { from { transform: scale(0.98); } to { transform: none; } } }
+.sheet .li { padding: 10px 0; }
+.sheet .li button { all: unset; cursor: pointer; display: flex; gap: 12px; align-items: center; width: 100%; font-weight: 800; }
+#toast { position: fixed; left: 50%; transform: translateX(-50%); bottom: calc(var(--nav-h) + var(--mini-h) + 22px + env(safe-area-inset-bottom, 0px)); z-index: 20;
+  background: var(--fg); color: var(--bg); padding: 10px 16px; border-radius: 10px; font-weight: 800; font-size: 14px; max-width: calc(100% - 32px); text-align: center; }
+@media (prefers-reduced-motion: no-preference) { .card.hot { animation: pop 0.5s ease-out; } @keyframes pop { from { transform: scale(0.98); } to { transform: none; } } .tile:active, .quick button:active { transform: scale(0.97); } }
 </style>
 
 <div class="app">
   <header class="top" id="top"></header>
   <main id="screen" tabindex="-1"></main>
 </div>
+<div class="mini" id="mini" role="region" aria-label="Monthly race"></div>
 <nav class="nav" id="nav" aria-label="Main"></nav>
 <div id="sheet" hidden></div>
 <div id="toast" role="status" aria-live="polite" hidden></div>
@@ -154,9 +199,9 @@ const CONFIG = {
 
   // Groups. Members come from the data pipeline; extraMembers adds the viewer to groups she joined.
   groups: {
-    pop:    { name: "Mostly Pop",     code: "POPCLUB", extraMembers: [] },
-    hiphop: { name: "Mostly Hip Hop", code: "BARS",    extraMembers: ["grace"] },
-    kpop:   { name: "Mostly K-Pop",   code: "ROOMIES", extraMembers: ["grace"] },
+    pop:    { name: "Mostly Pop",     code: "POPCLUB", color: "#FF6F91", extraMembers: [] },
+    hiphop: { name: "Mostly Hip Hop", code: "BARS",    color: "#F2C14E", extraMembers: ["grace"] },
+    kpop:   { name: "Mostly K-Pop",   code: "ROOMIES", color: "#C792EA", extraMembers: ["grace"] },
   },
   startJoined: ["pop", "hiphop"],        // groups the viewer is already in; others are joined with their code
 
@@ -222,6 +267,8 @@ const TEXT = {
   closestRaceTied: "{leader} and {chaser} are tied for {artist}.", noRace: "No close races yet.",
   groupSound: "Group Sound", groupSoundSub: "Top genres, with every member weighted equally", leansHardest: "{name} leans hardest ({pct})", leansHardestYou: "You lean hardest ({pct})",
   compareGroups: "Compare with another group",
+  greetMorning: "Good morning, {name}", greetAfternoon: "Good afternoon, {name}", greetEvening: "Good evening, {name}",
+  topThisMonth: "Top artists this month", miniSub: "{group} · {results}",
   resetDemo: "Reset demo",
   // Group switcher and join
   yourGroups: "Your groups", joinGroup: "Join a group", joinTitle: "Join a group",
@@ -318,6 +365,16 @@ const ICONS = {
   bell: '<path d="M6 16V11a6 6 0 1 1 12 0v5l2 2H4zM10 21h4"/>',
 };
 const icon = (name, cls = "ico") => `<svg class="${cls}" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">${ICONS[name]}</svg>`;
+/** Generated cover art: a gradient tile with initials, seeded by the name so it never changes. size 0 = fills its column. */
+function cover(seed, size = 48, color) {
+  const h = hash(String(seed)) % 360;
+  const bg = color ? `linear-gradient(135deg, ${color}, #1A1A22)` : `linear-gradient(135deg, hsl(${h} 72% 58%), hsl(${(h + 48) % 360} 70% 30%))`;
+  const letters = String(seed).replace(/[^\p{L}\p{N} ]/gu, "").split(/\s+/).filter(Boolean).slice(0, 2).map((w) => [...w][0]).join("").toUpperCase() || "♪";
+  const dim = size ? `width:${size}px;height:${size}px;font-size:${Math.round(size * 0.36)}px` : "";
+  return `<span class="art${size ? "" : " fluid"}" style="--art:${bg};${dim}" aria-hidden="true">${esc(letters)}</span>`;
+}
+const PLAY = '<svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M8 5.5v13l10.5-6.5z"/></svg>';
+const DONE = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12.5l4.5 4.5L19 7"/></svg>';
 const CROWN = '<svg class="crown" viewBox="0 0 24 24" fill="currentColor" aria-label="Crown"><path d="M3 8l4.5 4L12 5l4.5 7L21 8l-2 11H5z"/></svg>';
 
 // Seeded random numbers so the simulated months are the same on every load.
@@ -500,30 +557,49 @@ function daysLeftText() {
   return left <= 0 ? t("lastDay") : left === 1 ? t("oneDayLeft") : t("daysLeft", { n: left });
 }
 
+function raceResults() {
+  const left = MONTHS[THIS].days - state.day;
+  return left <= 0 ? t("resultsToday") : left === 1 ? t("resultsTomorrow") : t("resultsIn", { n: left });
+}
+function greeting() {
+  const h = new Date().getHours();
+  return t(h < 12 ? "greetMorning" : h < 18 ? "greetAfternoon" : "greetEvening", { name: nameOf(CONFIG.viewer) });
+}
+/** Mini player above the tab bar: the monthly race, with a play-style button that simulates a day. */
+function miniHtml() {
+  const g = CONFIG.groups[state.group], m = MONTHS[THIS], done = state.day >= m.days;
+  return `${cover(g.name, 40, g.color)}
+    <div class="grow"><div class="mini-t">${tx("raceDay", { day: state.day, days: m.days })}</div><div class="mini-s">${tx("miniSub", { group: g.name, results: raceResults() })}</div></div>
+    <button class="play" data-action="simulate-day" aria-label="${done ? tx("monthDone") : tx("simulateDay")}" title="${done ? tx("monthDone") : tx("simulateDay")}" ${done ? "disabled" : ""}>${done ? DONE : PLAY}</button>
+    <div class="prog"><i style="width:${(state.day / m.days) * 100}%"></i></div>`;
+}
+
 function renderHome() {
-  const gk = state.group, m = MONTHS[THIS], members = membersOf(gk);
-  const left = m.days - state.day;
-  const results = left <= 0 ? t("resultsToday") : left === 1 ? t("resultsTomorrow") : t("resultsIn", { n: left });
+  const gk = state.group, g = CONFIG.groups[gk], m = MONTHS[THIS], members = membersOf(gk);
   const alerts = alertsFor(gk, state.day).reverse();
-  const latest = alerts[0], earlier = alerts.slice(1, 3);
-  const race = closestRace(gk);
-  const sound = groupSound(gk);
-  const isNew = latest && latest.day === state.newAlertDay;
+  const latest = alerts[0], earlier = alerts.slice(1, 3), isNew = latest && latest.day === state.newAlertDay;
+  const race = closestRace(gk), sound = groupSound(gk);
+  const topMonth = groupArtists(gk, { kind: "month", mi: THIS }).filter(([, n]) => n > 0).slice(0, 10);
+  const sig = groupArtists(gk, { kind: "all" })[0]?.[0] || g.name;
+  const quick = [
+    ["tab", "rank", t("rankTitle"), topMonth[0]?.[0] || sig],
+    ["tab", "match", t("matchTitle"), t("matchTitle")],
+    ["tab", "challenges", t("challengesTitle"), t("challengesTitle")],
+    ["tab", "recap", t("navRecap"), m.label],
+    ["open-compare", "", t("compareTitle"), t("compareTitle")],
+    ...(members.includes(CONFIG.viewer) ? [["open-share", "", t("shareTitle"), sig]] : []),
+  ];
   return `
   <section class="stack">
-    <div class="row between">
-      <div class="grow"><h1>${esc(CONFIG.groups[gk].name)}</h1><p class="muted small">${tx("homeMembers", { n: members.length })}</p></div>
-    </div>
+    <div><p class="eyebrow">${esc(greeting())}</p><h1>${esc(g.name)}</h1><p class="muted small">${tx("homeMembers", { n: members.length })}</p></div>
     <div class="members">${members.map((pk) => `<div class="member">${avatar(pk, "lg")}<span>${esc(who(pk))}</span></div>`).join("")}</div>
+    <div class="quick">${quick.map(([action, value, label, seed]) => `<button data-action="${action}"${value ? ` data-value="${value}"` : ""}>${cover(seed, 56)}<span>${esc(label)}</span></button>`).join("")}</div>
 
-    <div class="card">
+    <div class="card race">
       <div class="row between wrap">${simTag()}<span class="pill">${tx("raceTitle", { month: m.label })}</span></div>
-      <h2>${tx("raceDay", { day: state.day, days: m.days })} · ${esc(results)}</h2>
+      <h2>${tx("raceDay", { day: state.day, days: m.days })} · ${esc(raceResults())}</h2>
       <div class="bar" role="progressbar" aria-valuemin="1" aria-valuemax="${m.days}" aria-valuenow="${state.day}"><i style="width:${(state.day / m.days) * 100}%"></i></div>
-      <div class="row wrap">
-        <button class="btn small" data-action="simulate-day" ${left <= 0 ? "disabled" : ""}>${left <= 0 ? tx("monthDone") : tx("simulateDay")}</button>
-        ${state.day !== CONFIG.sim.startDay ? `<button class="link small" data-action="reset-day">${tx("resetMonth", { day: CONFIG.sim.startDay })}</button>` : ""}
-      </div>
+      ${state.day !== CONFIG.sim.startDay ? `<button class="link small" data-action="reset-day" style="justify-self:start">${tx("resetMonth", { day: CONFIG.sim.startDay })}</button>` : ""}
     </div>
 
     <div class="card ${isNew ? "hot" : ""}" id="latest-alert">
@@ -535,11 +611,18 @@ function renderHome() {
 
     <div class="card">
       <span class="eyebrow">${tx("closestRace")}</span>
-      ${race ? `<div class="row"><div class="avs">${avatar(race.leader)}${avatar(race.chaser)}</div><p class="grow"><b>${esc(race.gap === 0
+      ${race ? `<div class="row">${cover(race.artist, 48)}<p class="grow"><b>${esc(race.gap === 0
           ? t("closestRaceTied", { leader: who(race.leader), chaser: who(race.chaser, false), artist: race.artist })
-          : tYou("closestRaceText", race.leader, { leader: who(race.leader), chaser: who(race.chaser, false), gap: playsText(race.gap), artist: race.artist }))}</b></p></div>`
+          : tYou("closestRaceText", race.leader, { leader: who(race.leader), chaser: who(race.chaser, false), gap: playsText(race.gap), artist: race.artist }))}</b></p><div class="avs">${avatar(race.leader, "sm")}${avatar(race.chaser, "sm")}</div></div>`
         : `<p class="muted">${tx("noRace")}</p>`}
     </div>
+
+    <div class="section-h"><h2>${tx("topThisMonth")}</h2>${simTag()}</div>
+    <div class="shelf">${topMonth.map(([a, n]) => `<button class="tile" data-action="open-artist" data-value="${esc(a)}">${cover(a, 0)}<span class="name">${esc(a)}</span><span class="small muted">${esc(playsText(n))}</span></button>`).join("")}</div>
+
+    <div class="section-h"><h2>${tx("yourGroups")}</h2></div>
+    <div class="shelf">${state.joined.map((k) => `<button class="tile" data-action="pick-group" data-value="${k}">${cover(CONFIG.groups[k].name, 0, CONFIG.groups[k].color)}<span class="name">${esc(CONFIG.groups[k].name)}</span><span class="small muted">${tx("homeMembers", { n: membersOf(k).length })}</span></button>`).join("")}
+      <button class="tile" data-action="open-join">${cover("+", 0, "#3A3A46")}<span class="name">${tx("joinGroup")}</span></button></div>
 
     <div class="card">
       <div class="row between wrap"><h2>${tx("groupSound")}</h2>${realTag()}</div>
@@ -552,7 +635,6 @@ function renderHome() {
         </div>`).join("")}
     </div>
 
-    <button class="btn ghost" data-action="open-compare">${tx("compareGroups")}</button>
     <button class="link small" data-action="reset-demo" style="justify-self:center">${tx("resetDemo")}</button>
   </section>`;
 }
@@ -571,22 +653,25 @@ function renderRank() {
     <h1>${tx("rankTitle")}</h1>
     ${scopeToggle("rank-scope", state.rankScope, true)}
     ${scope.kind === "all" ? realTag() : simTag()}
-    <div class="card">
-      <label class="field" for="artist-search">${tx("searchArtists")}
-        <input class="input" id="artist-search" type="search" autocomplete="off" value="${esc(state.rankSearch)}" placeholder="${tx("searchArtists")}">
-      </label>
-      <div class="scroll-list" id="artist-list">${artistListHtml(artists)}</div>
-    </div>
     <div class="card" id="board">
-      <div class="row between wrap"><h2>${esc(state.rankArtist || "")}</h2>${genreOf(state.rankArtist) ? `<span class="pill">${esc(genreOf(state.rankArtist))}</span>` : ""}</div>
+      <div class="board-head">${cover(state.rankArtist || "", 112)}<div class="grow stack" style="gap:6px">
+        ${genreOf(state.rankArtist) ? `<span class="eyebrow">${esc(cap(genreOf(state.rankArtist)))}</span>` : ""}
+        <h2>${esc(state.rankArtist || "")}</h2>
+        <span class="small muted">${tx("homeMembers", { n: board.length })} · ${esc(playsText(board.reduce((s, r) => s + r.plays, 0)))}</span></div></div>
       ${you ? `<p class="note">${esc(you)}</p>` : ""}
       <div class="list">${board.map((r, i) => `
         <div class="li">
           <span class="rank">${i + 1}</span>${avatar(r.pk)}
           <div class="grow"><div class="row"><span class="name">${esc(who(r.pk))}</span>${i === 0 && r.plays > 0 ? CROWN : ""}</div>
             ${i > 0 && r.plays < top ? `<div class="small muted">${tx("fromFirst", { n: playsText(top - r.plays) })}</div>` : i > 0 && r.plays === top && top > 0 ? `<div class="small muted">${tx("tiedFirst")}</div>` : ""}</div>
-          <span class="num">${fmt(r.plays)}</span>
+          <span class="num muted">${fmt(r.plays)}</span>
         </div>`).join("")}</div>
+    </div>
+    <div class="card">
+      <label class="field" for="artist-search">${tx("searchArtists")}
+        <input class="input" id="artist-search" type="search" autocomplete="off" value="${esc(state.rankSearch)}" placeholder="${tx("searchArtists")}">
+      </label>
+      <div class="scroll-list" id="artist-list">${artistListHtml(artists)}</div>
     </div>
   </section>`;
 }
@@ -594,9 +679,8 @@ function artistListHtml(artists) {
   const q = state.rankSearch.trim().toLowerCase();
   const shown = artists.filter(([a]) => !q || a.toLowerCase().includes(q)).slice(0, q ? 60 : 25);
   if (!shown.length) return `<p class="empty">${tx("noArtists", { q: state.rankSearch })}</p>`;
-  return shown.map(([a, n]) => `<button class="artist-btn" data-action="pick-artist" data-value="${esc(a)}" aria-pressed="${a === state.rankArtist}"><span class="name">${esc(a)}</span><span class="num muted">${fmt(n)}</span></button>`).join("");
+  return shown.map(([a, n]) => `<button class="artist-btn" data-action="pick-artist" data-value="${esc(a)}" aria-pressed="${a === state.rankArtist}">${cover(a, 40)}<span class="name">${esc(a)}</span><span class="num small muted">${fmt(n)}</span></button>`).join("");
 }
-
 function renderMatch() {
   const gk = state.group, members = membersOf(gk);
   if (!members.includes(state.matchA)) state.matchA = members.includes(CONFIG.viewer) ? CONFIG.viewer : members[0];
@@ -622,7 +706,7 @@ function renderMatch() {
     </div>
     ${a === b ? "" : `<div class="card">
       <h2>${tx("sharedArtists")}</h2>
-      ${shared.length ? `<div class="list">${shared.map(([art, na, nb]) => `<div class="li"><span class="grow name">${esc(art)}</span><span class="small muted num">${esc(who(a))} ${fmt(na)} · ${esc(who(b))} ${fmt(nb)}</span></div>`).join("")}</div>` : `<p class="muted">${tx("noShared")}</p>`}
+      ${shared.length ? `<div class="list">${shared.map(([art, na, nb]) => `<div class="li">${cover(art, 40)}<span class="grow name">${esc(art)}</span><span class="small muted num">${esc(who(a))} ${fmt(na)} · ${esc(who(b))} ${fmt(nb)}</span></div>`).join("")}</div>` : `<p class="muted">${tx("noShared")}</p>`}
     </div>`}
     <div class="card"><span class="eyebrow">${tx("twins")}</span>${pairRow(ps[0])}<span class="eyebrow">${tx("opposites")}</span>${pairRow(ps[ps.length - 1])}</div>
   </section>`;
@@ -745,7 +829,7 @@ function renderRecap() {
     ${simTag()}
     <div class="card">
       <span class="eyebrow">${tx("topArtist")}</span>
-      <div class="big">${esc(r.topArtist)}</div>
+      <div class="row" style="gap:14px;align-items:flex-end">${cover(r.topArtist, 84)}<div class="big grow">${esc(r.topArtist)}</div></div>
       <div class="two">
         <div><span class="eyebrow">${tx("topGenre")}</span><h2>${esc(cap(r.topGenre))}</h2></div>
         <div><span class="eyebrow">${tx("totalPlays")}</span><h2 class="num">${fmt(r.total)}</h2></div>
@@ -870,7 +954,7 @@ function renderCompare() {
   const sel = (id, val) => `<select class="input" id="${id}">${groups.map((g) => `<option value="${g}" ${g === val ? "selected" : ""}>${esc(CONFIG.groups[g].name)}</option>`).join("")}</select>`;
   const col = (s) => `<div class="card">
       <span class="eyebrow">${tx("topGenre")}</span><h3>${esc(cap(s.genre))}</h3>
-      <span class="eyebrow">${tx("signatureArtist")}</span><h3>${esc(s.sig)}</h3>
+      <span class="eyebrow">${tx("signatureArtist")}</span><div class="row">${cover(s.sig, 36)}<h3 class="grow">${esc(s.sig)}</h3></div>
       <span class="eyebrow">${tx("biggestFan")}</span><div class="row">${avatar(s.fan.pk, "sm")}<span class="small"><b>${esc(who(s.fan.pk))}</b> · ${fmt(s.fan.plays)}</span></div>
     </div>`;
   return `
@@ -913,6 +997,10 @@ function render() {
     ? `<button class="back" data-action="close-overlay">${icon("back")}${tx("back")}</button><span class="brand">${brandHtml()}</span>`
     : `<span class="brand">${brandHtml()}</span><button class="switcher" data-action="open-switcher" aria-haspopup="dialog"><span>${esc(CONFIG.groups[state.group].name)}</span>${icon("chevron")}</button>`;
   $("#screen").innerHTML = SCREENS[screen]();
+  document.querySelector(".app").style.setProperty("--hero-a", (CONFIG.groups[state.group].color || "#FF8A4C") + "59");
+  document.documentElement.style.setProperty("--hero-a", (CONFIG.groups[state.group].color || "#FF8A4C") + "59");
+  $("#mini").hidden = !!state.overlay;
+  $("#mini").innerHTML = state.overlay ? "" : miniHtml();
   $("#nav").innerHTML = TABS.map(([k, label]) => `<button data-action="tab" data-value="${k}" ${!state.overlay && state.tab === k ? 'aria-current="page"' : ""}>${icon(k, "")}${tx(label)}</button>`).join("");
   if (screen === "share" && $("#share-canvas")) {
     // Drawn on a hidden canvas, shown as an <img> so long-press / right-click "Save image" works everywhere.
@@ -948,6 +1036,8 @@ const ACTIONS = {
   "switch-group": (v) => { state.group = v; closeSheet(); state.newAlertDay = null; state.rankArtist = null; render(); },
   "open-join": () => { state.joinMessage = null; state.joinCode = ""; overlay("join"); },
   "open-compare": () => overlay("compare"),
+  "pick-group": (v) => { state.group = v; state.newAlertDay = null; state.rankArtist = null; render(); window.scrollTo(0, 0); },
+  "open-artist": (v) => { state.rankArtist = v; state.rankSearch = ""; state.rankScope = "this"; go("rank"); },
   "open-share": () => overlay("share"),
   "join": () => {
     const code = ($("#join-code")?.value || "").trim().toUpperCase();
