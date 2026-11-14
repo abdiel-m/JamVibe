@@ -129,7 +129,52 @@ p { margin: 0; }
 .sheet .li button { all: unset; cursor: pointer; display: flex; gap: 10px; align-items: center; width: 100%; font-weight: 700; }
 #toast { position: fixed; left: 50%; transform: translateX(-50%); bottom: calc(var(--nav-h) + var(--fab-h) + 22px + env(safe-area-inset-bottom, 0px)); z-index: 20;
   background: var(--fg); color: var(--bg); padding: 10px 16px; border-radius: 999px; font-weight: 700; font-size: 14px; max-width: calc(100% - 32px); text-align: center; }
-@media (prefers-reduced-motion: no-preference) { .card.hot { animation: pop 0.5s ease-out; } @keyframes pop { from { transform: scale(0.98); } to { transform: none; } } }
+.confetti { position: fixed; inset: 0; width: 100%; height: 100%; pointer-events: none; z-index: 30; }
+
+/* ---------- Motion (all of it is skipped when the viewer prefers reduced motion) ---------- */
+@property --hero-a { syntax: "<color>"; inherits: true; initial-value: #FF8A4C66; }
+@property --p { syntax: "<number>"; inherits: false; initial-value: 0; }
+@media (prefers-reduced-motion: no-preference) {
+  :root { --ease: cubic-bezier(0.2, 0.8, 0.2, 1); --spring: cubic-bezier(0.3, 1.5, 0.5, 1); }
+  .app { transition: --hero-a 0.7s ease; }                                   /* gradient wash fades between tab colors */
+  /* Screen entrance: cards rise in one after another, rows and avatars stagger, bars grow */
+  #screen.enter > section > * { animation: rise 0.45s var(--ease) both; animation-delay: calc(var(--i, 0) * 55ms); }
+  #screen.enter .list > .li, #screen.enter .members > .member { animation: rise 0.4s var(--ease) both; animation-delay: calc(120ms + var(--i, 0) * 40ms); }
+  #screen.enter .bar i { animation: grow 0.9s var(--ease) both; animation-delay: 150ms; transform-origin: left center; }
+  @keyframes rise { from { opacity: 0; transform: translateY(14px); } }
+  @keyframes grow { from { transform: scaleX(0); } }
+  /* Compatibility ring fills while the number counts up */
+  .ring { animation: ringfill 1.1s var(--ease) both; }
+  @keyframes ringfill { from { --p: 0; } }
+  /* Crown bobs on the #1 spot */
+  .crown { animation: crown 2.4s ease-in-out infinite; transform-origin: 50% 90%; }
+  @keyframes crown { 0%, 100% { transform: translateY(0) rotate(-7deg); } 50% { transform: translateY(-2px) rotate(7deg); } }
+  /* New alert: pop + glowing pulse */
+  .card.hot { animation: pop 0.5s var(--spring), glow 1.4s ease-out 2; }
+  @keyframes pop { from { transform: scale(0.96); } }
+  @keyframes glow { 0% { box-shadow: 0 0 0 0 #FF8A4C88; } 100% { box-shadow: 0 0 0 16px #FF8A4C00; } }
+  /* Day button: squash-and-pop, and the day number flips up */
+  .fab.tick { animation: tick 0.5s var(--spring); }
+  .fab span { display: inline-block; }
+  .fab.tick span { animation: flip 0.4s var(--ease); }
+  @keyframes tick { 0% { transform: scale(1); } 35% { transform: scale(0.88); } 70% { transform: scale(1.08); } 100% { transform: scale(1); } }
+  @keyframes flip { from { transform: translateY(70%); opacity: 0; } }
+  /* Share card flips into view */
+  .share-preview { animation: card-in 0.7s var(--spring) both; animation-delay: 120ms; }
+  @keyframes card-in { from { opacity: 0; transform: perspective(900px) rotateX(22deg) translateY(28px) scale(0.92); } }
+  /* Sheet slides up, toast pops in */
+  .sheet-backdrop { animation: fade 0.25s ease both; }
+  .sheet { animation: sheet 0.35s var(--ease) both; }
+  @keyframes fade { from { opacity: 0; } }
+  @keyframes sheet { from { transform: translateY(100%); } }
+  #toast:not([hidden]) { animation: toast 0.35s var(--spring) both; }
+  @keyframes toast { from { opacity: 0; transform: translate(-50%, 14px) scale(0.95); } }
+  /* Press feedback */
+  .btn:not(:disabled):active, .chip:active, .artist-btn:active, .seg button:active { transform: scale(0.97); }
+  .btn, .chip, .artist-btn, .seg button { transition: transform 0.12s ease, background-color 0.2s ease, color 0.2s ease; }
+  .nav button svg { transition: transform 0.25s var(--spring); }
+  .nav button[aria-current="page"] svg { transform: translateY(-2px) scale(1.08); }
+}
 </style>
 </head>
 <body>
@@ -609,11 +654,11 @@ function renderRank() {
       <div class="row between wrap"><h2>${esc(state.rankArtist || "")}</h2>${genreOf(state.rankArtist) ? `<span class="pill">${esc(genreOf(state.rankArtist))}</span>` : ""}</div>
       ${you ? `<p class="note">${esc(you)}</p>` : ""}
       <div class="list">${board.map((r, i) => `
-        <div class="li">
+        <div class="li" data-flip="${r.pk}">
           <span class="rank">${i + 1}</span>${avatar(r.pk)}
           <div class="grow"><div class="row"><span class="name">${esc(who(r.pk))}</span>${i === 0 && r.plays > 0 ? CROWN : ""}</div>
             ${i > 0 && r.plays < top ? `<div class="small muted">${tx("fromFirst", { n: playsText(top - r.plays) })}</div>` : i > 0 && r.plays === top && top > 0 ? `<div class="small muted">${tx("tiedFirst")}</div>` : ""}</div>
-          <span class="num">${fmt(r.plays)}</span>
+          <span class="num" data-count="lb-${r.pk}">${fmt(r.plays)}</span>
         </div>`).join("")}</div>
     </div>
   </section>`;
@@ -644,7 +689,7 @@ function renderMatch() {
     <div class="card" style="text-align:center">
       ${a === b ? `<p class="muted">${tx("pickTwo")}</p>` : `
       <div class="row" style="justify-content:center">${avatar(a, "lg")}${avatar(b, "lg")}</div>
-      <div class="ring" style="--p:${score}"><div class="num">${score}%</div></div>
+      <div class="ring" style="--p:${score}"><div class="num" data-count="match" data-count-from="0">${score}%</div></div>
       <h2>${esc(tier)}</h2>
       <p class="muted small">${tx("matchSub")}</p>`}
     </div>
@@ -776,7 +821,7 @@ function renderRecap() {
       <div class="big">${esc(r.topArtist)}</div>
       <div class="two">
         <div><span class="eyebrow">${tx("topGenre")}</span><h2>${esc(cap(r.topGenre))}</h2></div>
-        <div><span class="eyebrow">${tx("totalPlays")}</span><h2 class="num">${fmt(r.total)}</h2></div>
+        <div><span class="eyebrow">${tx("totalPlays")}</span><h2 class="num" data-count="recap-total">${fmt(r.total)}</h2></div>
       </div>
       ${r.fan ? `<div class="row">${avatar(r.fan.pk)}<div><span class="eyebrow">${tx("biggestFan")}</span><p><b>${esc(t("biggestFanText", { name: who(r.fan.pk), n: playsText(r.fan.plays), artist: r.topArtist }))}</b></p></div></div>` : ""}
     </div>
@@ -930,6 +975,80 @@ function renderJoin() {
 }
 
 /* =====================================================================================
+   MOTION: screen entrances, leaderboard reordering (FLIP), count-ups and confetti.
+   CSS does the entrances; this part handles what CSS can't. All off for reduced motion.
+   ===================================================================================== */
+const MOTION = !(window.matchMedia && window.matchMedia("(prefers-reduced-motion: reduce)").matches);
+let lastScreenKey = null;
+// Animation timer; falls back to setTimeout where there is no screen to paint (e.g. a headless test).
+const raf = window.requestAnimationFrame ? (f) => window.requestAnimationFrame(f) : (f) => setTimeout(() => f(performance.now()), 16);
+
+const parseCount = (text) => { const m = /^\s*([\d,]+)/.exec(text); return m ? Number(m[1].replace(/,/g, "")) : null; };
+/** Before a same-screen re-render: where each reorderable row was, and what each counter showed. */
+function snapshotMotion() {
+  const pos = new Map(), counts = new Map();
+  document.querySelectorAll("#screen [data-flip]").forEach((el) => pos.set(el.dataset.flip, el.getBoundingClientRect().top));
+  document.querySelectorAll("#screen [data-count]").forEach((el) => counts.set(el.dataset.count, parseCount(el.textContent)));
+  return { pos, counts };
+}
+/** After render: stagger indexes, slide moved rows from their old spot (FLIP), and tween numbers. */
+function playMotion(snap, entering) {
+  const screen = $("#screen");
+  screen.classList.toggle("enter", MOTION && entering);
+  if (!MOTION) return;
+  screen.querySelectorAll(":scope > section > *").forEach((el, i) => el.style.setProperty("--i", Math.min(i, 10)));
+  screen.querySelectorAll(".list > .li, .members > .member").forEach((el, i) => el.style.setProperty("--i", Math.min(i, 12)));
+  if (snap) screen.querySelectorAll("[data-flip]").forEach((el) => {
+    const was = snap.pos.get(el.dataset.flip);
+    if (was == null || !el.animate) return;
+    const dy = was - el.getBoundingClientRect().top;
+    if (Math.abs(dy) > 1) el.animate([{ transform: `translateY(${dy}px)` }, { transform: "none" }], { duration: 560, easing: "cubic-bezier(0.2, 0.8, 0.2, 1)" });
+  });
+  screen.querySelectorAll("[data-count]").forEach((el) => {
+    const to = parseCount(el.textContent);
+    const from = el.dataset.countFrom === "0" || !snap ? 0 : snap.counts.get(el.dataset.count);
+    if (to != null && from != null && from !== to) countUp(el, from, to);
+  });
+}
+/** Tween a number (keeping any suffix like "%"); always lands exactly on the final value. */
+function countUp(el, from, to, ms = 700) {
+  const suffix = el.textContent.replace(/^\s*[\d,]+/, ""), start = performance.now();
+  const step = (now) => {
+    const k = Math.min(1, (now - start) / ms), eased = 1 - Math.pow(1 - k, 3);
+    el.textContent = fmt(from + (to - from) * eased) + suffix;
+    if (k < 1 && el.isConnected) raf(step);
+  };
+  el.textContent = fmt(from) + suffix;
+  raf(step);
+}
+/** A short burst of confetti in the members' avatar colors. */
+function confetti() {
+  if (!MOTION) return;
+  const c = document.createElement("canvas"), ctx = c.getContext && c.getContext("2d");
+  if (!ctx) return;
+  c.className = "confetti"; c.width = innerWidth; c.height = innerHeight; c.setAttribute("aria-hidden", "true");
+  document.body.appendChild(c);
+  const colors = [...new Set(Object.values(CONFIG.people).map((p) => p.color))];
+  const bits = Array.from({ length: 140 }, () => ({
+    x: innerWidth / 2 + (Math.random() - 0.5) * 160, y: innerHeight * 0.38, vx: (Math.random() - 0.5) * 13, vy: -Math.random() * 13 - 5,
+    r: Math.random() * Math.PI, vr: (Math.random() - 0.5) * 0.4, w: 6 + Math.random() * 6, h: 4 + Math.random() * 4, c: colors[(Math.random() * colors.length) | 0] }));
+  const start = performance.now();
+  const frame = (now) => {
+    const t = now - start;
+    ctx.clearRect(0, 0, c.width, c.height);
+    for (const b of bits) {
+      b.vy += 0.38; b.vx *= 0.99; b.x += b.vx; b.y += b.vy; b.r += b.vr;
+      ctx.save(); ctx.translate(b.x, b.y); ctx.rotate(b.r); ctx.globalAlpha = Math.max(0, 1 - t / 1900);
+      ctx.fillStyle = b.c; ctx.fillRect(-b.w / 2, -b.h / 2, b.w, b.h); ctx.restore();
+    }
+    if (t < 1900) raf(frame); else c.remove();
+  };
+  raf(frame);
+}
+/** Replay the Day button's squash-and-pop. */
+function tickFab() { const f = $("#fab"); if (!MOTION) return; f.classList.remove("tick"); void f.offsetWidth; f.classList.add("tick"); }
+
+/* =====================================================================================
    APP SHELL: top bar, nav, sheet, toast, rendering and events
    ===================================================================================== */
 const TABS = [["home", "navHome"], ["rank", "navRank"], ["match", "navMatch"], ["challenges", "navChallenges"], ["recap", "navRecap"]];
@@ -940,7 +1059,11 @@ function render() {
   $("#top").innerHTML = state.overlay
     ? `<button class="back" data-action="close-overlay">${icon("back")}${tx("back")}</button><span class="brand">${brandHtml()}</span>`
     : `<span class="brand">${brandHtml()}</span><button class="switcher" data-action="open-switcher" aria-haspopup="dialog"><span>${esc(CONFIG.groups[state.group].name)}</span>${icon("chevron")}</button>`;
+  const key = screen + "|" + state.group, entering = key !== lastScreenKey;
+  lastScreenKey = key;
+  const snap = entering ? null : snapshotMotion();
   $("#screen").innerHTML = SCREENS[screen]();
+  playMotion(snap, entering);
   // Screen gradient color (see CONFIG.theme)
   document.querySelector(".app").style.setProperty("--hero-a", (CONFIG.theme.screens[screen] || CONFIG.theme.screens.home) + CONFIG.theme.strength);
   // Floating day button: main tabs only
@@ -993,7 +1116,7 @@ const ACTIONS = {
     if (!code) state.joinMessage = t("joinEmpty");
     else if (!gk) state.joinMessage = t("joinBad", { code });
     else if (state.joined.includes(gk)) state.joinMessage = t("joinAlready", { group: CONFIG.groups[gk].name });
-    else { state.joined.push(gk); state.group = gk; state.tab = "home"; state.rankArtist = null; state.newAlertDay = null; state.joinMessage = t("joinOk", { group: CONFIG.groups[gk].name }); toast(state.joinMessage); }
+    else { state.joined.push(gk); state.group = gk; state.tab = "home"; state.rankArtist = null; state.newAlertDay = null; state.joinMessage = t("joinOk", { group: CONFIG.groups[gk].name }); toast(state.joinMessage); confetti(); }
     render();
   },
   "simulate-day": () => {
@@ -1002,6 +1125,8 @@ const ACTIONS = {
     const fresh = alertsFor(state.group, state.day).filter((a) => a.day === state.day);
     state.newAlertDay = fresh.length ? state.day : -1;
     render();
+    tickFab();
+    if (state.day === MONTHS[THIS].days) confetti();   // results day
     if (fresh.length) toast(alertText(fresh[fresh.length - 1]));
   },
   "reset-day": () => { state.day = CONFIG.sim.startDay; state.newAlertDay = null; render(); },
@@ -1019,7 +1144,7 @@ const ACTIONS = {
     const ch = type === "goal" ? { type, artist, target, stakes } : { type, a: me, b: $("#ch-b").value, artist, stakes, ...(type === "recommend" ? { target } : {}) };
     const list = (state.challenges[gk] = (state.challenges[gk] || []).filter((c) => validChallenge(c, gk)));
     if (list.length >= CONFIG.freeChallengeLimit || !validChallenge(ch, gk)) { render(); return; }
-    list.push(ch); state.challengeForm = null; render(); toast(t("challengeCreated"));
+    list.push(ch); state.challengeForm = null; render(); toast(t("challengeCreated")); confetti();
   },
   "end-challenge": (v) => { const gk = state.group; state.challenges[gk] = (state.challenges[gk] || []).filter((c) => validChallenge(c, gk)); state.challenges[gk].splice(Number(v), 1); render(); toast(t("challengeEnded")); },
   "save-image": () => saveImage(),
@@ -1031,6 +1156,7 @@ document.addEventListener("click", (e) => {
   const fn = ACTIONS[el.dataset.action];
   if (fn) fn(el.dataset.value, e);
 });
+$("#fab").addEventListener("animationend", (e) => { if (e.target.id === "fab") e.target.classList.remove("tick"); });
 document.addEventListener("keydown", (e) => {
   if (e.key === "Escape" && !$("#sheet").hidden) closeSheet();
   if (e.key === "Enter" && e.target.id === "join-code") ACTIONS.join();
