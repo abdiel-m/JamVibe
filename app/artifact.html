@@ -173,6 +173,15 @@ body::before { content: ""; position: fixed; inset: 0 0 auto; height: env(safe-a
 .tier-state svg { width: 14px; height: 14px; }
 .tiers li.on .tier-label, .tiers li.on .tier-state { color: var(--up); }
 .fine { font-size: 11px; color: var(--faint); }
+/* Sponsored: Leaderboard + Join buttons, leaderboard popup */
+.card.sponsor { scroll-margin-top: 112px; }   /* leaves the "Joined" heading visible under the top bar */
+.sp-actions { display: flex; gap: var(--sp-2); flex: none; }
+.sp-actions .btn svg { width: 16px; height: 16px; }
+.sheet-backdrop.center { align-items: center; padding: 16px; }
+.sheet-backdrop.center .sheet { border-radius: var(--r-l); width: min(100%, 400px); max-height: 80vh; overflow-y: auto; padding: var(--sp-6) var(--sp-4); }
+.sheet:focus { outline: none; }
+.board-list .li.me { background: var(--s2); border-radius: var(--r-s); padding-inline: var(--sp-2); }
+.tier-pill { color: var(--up); background: #5FD3B41A; }
 /* Group challenge invites and the Home inbox */
 /* Back-button screens: keep the logo on the right instead of on top of "Back" (.brand is absolutely positioned for the scroll title swap) */
 .top .brand.brand-inline { position: static; inset: auto; margin-left: auto; animation: none; }
@@ -396,20 +405,25 @@ const CONFIG = {
   replyAcceptRate: 0.8,                  // chance a friend accepts the viewer's invite (seeded per invite)
   freeChallengeLimit: 3,                 // challenges per group the viewer can be in (or waiting on) at once
 
-  // Sponsored challenges, paid for by concert promoters or an artist's team. Example sponsors for the demo only.
-  // Ranked on plays this month against every listener in the demo. Rewards: top N, top N %, or N+ plays.
+  // Sponsored challenges: up-and-coming artists pay to put a challenge in front of listeners who'd like them.
+  // Every artist here is MADE UP for the demo. genres + soundsLike decide who sees each one and how much they play it
+  // (simulated, since made-up artists aren't in the listening data). Rewards: top N, top N %, or N+ plays.
   sponsored: [
-    { id: "gaga-northside", kind: "promoter", sponsor: "Northside Arena", artist: "Lady Gaga", title: "Gaga month at Northside Arena",
-      rewards: [{ top: 1, text: "Meet the artist backstage" }, { pct: 10, text: "30% off tickets" }, { min: 50, text: "Presale code for the next tour" }] },
-    { id: "taylor-team", kind: "artist", artist: "Taylor Swift", title: "Listening party race",
-      rewards: [{ top: 1, text: "Signed vinyl and a video shout-out" }, { pct: 10, text: "Early access to the next single" }, { min: 20, text: "Invite to the online listening party" }] },
-    { id: "kendrick-basement", kind: "promoter", sponsor: "Basement Sessions", artist: "Kendrick Lamar", title: "Road to the arena",
-      rewards: [{ top: 3, text: "Two floor tickets" }, { pct: 25, text: "15% off tour merch" }] },
-    { id: "ariana-harbor", kind: "promoter", sponsor: "Harbor Live", artist: "Ariana Grande", title: "Harbor Live presents",
-      rewards: [{ top: 1, text: "Meet the artist" }, { pct: 10, text: "30% off tickets" }, { min: 30, text: "Members-only ticket window" }] },
-    { id: "twice-team", kind: "artist", artist: "TWICE", title: "ONCE more",
-      rewards: [{ top: 1, text: "Meet & greet at a tour stop" }, { pct: 10, text: "30% off tickets" }] },
+    { id: "juniper-reyes", artist: "Juniper Reyes", title: "Juniper's first 30 days", genres: ["pop", "dance-pop", "electropop"], soundsLike: ["Dua Lipa", "Sabrina Carpenter"],
+      rewards: [{ top: 1, text: "Video call with Juniper and a signed vinyl" }, { pct: 10, text: "Guest list for the release show" }, { min: 20, text: "Early access to the next single" }] },
+    { id: "ivy-lockhart", artist: "Ivy Lockhart", title: "Midnight sessions", genres: ["indie pop", "dream pop", "art pop", "bedroom pop"], soundsLike: ["Lana Del Rey", "Lorde"],
+      rewards: [{ top: 1, text: "A handwritten lyric sheet from Ivy" }, { pct: 10, text: "Two tickets to her first headline show" }] },
+    { id: "lumira", artist: "LUMIRA", title: "LUMIRA debut race", genres: ["k-pop"], soundsLike: ["TWICE", "LE SSERAFIM"],
+      rewards: [{ top: 3, text: "Signed debut album" }, { pct: 10, text: "Online fan meeting invite" }, { min: 25, text: "Exclusive photocard" }] },
+    { id: "marlow-kade", artist: "Marlow Kade", title: "Road to the mixtape", genres: ["hip hop", "trap", "pop rap", "cloud rap"], soundsLike: ["Kendrick Lamar", "JID"],
+      rewards: [{ top: 1, text: "Your name in the mixtape credits" }, { pct: 10, text: "Two tickets to the mixtape release show" }] },
+    { id: "velvet-static", artist: "Velvet Static", title: "After hours with Velvet Static", genres: ["r&b", "contemporary r&b", "alternative r&b", "soul"], soundsLike: ["SZA", "Frank Ocean"],
+      rewards: [{ top: 1, text: "Studio visit with the duo" }, { min: 20, text: "Unreleased demo download" }] },
+    { id: "paper-comets", artist: "The Paper Comets", title: "Comet club", genres: ["pop punk", "alternative rock", "indie rock", "pop rock"], soundsLike: ["Paramore", "My Chemical Romance"],
+      rewards: [{ top: 1, text: "Soundcheck access at their next show" }, { pct: 10, text: "Signed setlist" }, { min: 15, text: "Band sticker pack" }] },
   ],
+  sponsorRate: 8,                        // simulated plays per day of a sponsor's artist for someone whose listening is all that sound
+  sponsorMinFit: 0.03,                   // how closely the viewer's listening must fit a sponsor's sound to see it under "For you"
 
   // Group awards in Recap. {name}, {pct}, {artist}, {genre}, {count} are filled in.
   awards: [
@@ -495,14 +509,17 @@ const TEXT = {
   noteAccepted: "{name} accepted your {artist} challenge.", noteDeclined: "{name} declined your {artist} challenge.",
   repliesToast: "{n} friends replied to your challenges.", replyToastOne: "{text}",
   // Sponsored challenges
-  spTitle: "Sponsored challenges", spSectionSub: "Paid for by promoters and artists. They don't use your free challenge slots.",
-  spPromoterBy: "Presented by {sponsor}", spArtistBy: "Promoted by {artist}'s team", spBadge: "Sponsored",
+  spTitle: "Sponsored challenges", spSectionSub: "Paid for by up-and-comers we think you'll like.",
+  spBoard: "Leaderboard", spBoardSub: "Ranked by {artist} plays this month, across all {n} listeners in this demo.", close: "Close",
+  spJoinedTitle: "Joined", spJoinedEmpty: "You haven't joined any yet. Pick one below.",
+  spMoreTitle: "For you", spMoreEmpty: "Nothing else for this group right now.",
+  spArtistBy: "Promoted by {artist}", spBadge: "Sponsored", spSoundsLike: "For fans of {a} and {b}",
   spRule: "Most {artist} plays this month wins. Ranked against all {n} listeners in this demo.",
   spStanding: "You're #{rank} of {n} · top {pct}%", spStandingNone: "You haven't played {artist} this month yet.",
   spLeader: "{name} leads with {n}", spQualify: "You qualify", spNeed: "{n} to go",
   spTierTop1: "#1", spTierTop: "Top {n}", spTierPct: "Top {n}%", spTierMin: "{n}+ plays",
   spJoin: "Join", spLeave: "Leave", spJoinedToast: "You joined {title}.", spLeftToast: "You left {title}.",
-  spDisclaimer: "Example sponsor for this demo. Not a real offer and not affiliated with the artist.",
+  spDisclaimer: "{artist} is a made-up artist for this demo. Not a real offer.",
   spHomeJoined: "{title} · {standing}", spHomeFeatured: "{reward} for the top {artist} fan",
   // Recap
   recapTitle: "{month}", recapSoFar: "{month} so far", recapLede: "{artist} led the group with {n}.", recapLedeEmpty: "No plays yet.",
@@ -574,6 +591,7 @@ const ICONS = {
   forward: '<path d="M6 4l10 8-10 8z"/><path d="M19 5v14"/>',
   rewind: '<path d="M18 20 8 12l10-8z"/><path d="M5 19V5"/>',
   check: '<path d="M20 6 9 17l-5-5"/>',
+  board: '<path d="M5 20V11"/><path d="M12 20V4"/><path d="M19 20v-6"/>',
   inbox: '<path d="M22 12h-6l-2 3h-4l-2-3H2"/><path d="M5.45 5.11 2 12v6a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2v-6l-3.45-6.89A2 2 0 0 0 16.76 4H7.24a2 2 0 0 0-1.79 1.11z"/>',
   save: '<path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><path d="m7 10 5 5 5-5"/><path d="M12 15V3"/>',
   crown: '<path d="M11.56 3.27a.5.5 0 0 1 .88 0l2.95 5.6a1 1 0 0 0 1.52.29l4.27-3.66a.5.5 0 0 1 .8.52l-2.83 10.24a1 1 0 0 1-.96.74H5.81a1 1 0 0 1-.96-.74L2.02 6.02a.5.5 0 0 1 .8-.52l4.27 3.66a1 1 0 0 0 1.52-.29z"/><path d="M5 21h14"/>',
@@ -730,16 +748,35 @@ function closestRace(gk) {
   return best;
 }
 
-/** Sponsored challenges that matter here: someone in the group listens to the artist. Joined ones first. */
+/* ----- Sponsored artists are made up, so their plays are simulated from how well each listener's taste fits their sound ----- */
+const GENRE_SHARE_CACHE = new Map();
+function allTimeGenres(pk) { if (!GENRE_SHARE_CACHE.has(pk)) GENRE_SHARE_CACHE.set(pk, genreShares(pk, { kind: "all" })); return GENRE_SHARE_CACHE.get(pk); }
+/** 0..1: share of the listener's genre-tagged plays in the sponsor's genres, plus a bump for playing the artists they sound like. */
+function sponsorFit(pk, sp) {
+  const g = allTimeGenres(pk), share = sp.genres.reduce((s, x) => s + (g.get(x) || 0), 0);
+  return Math.min(1, share + (sp.soundsLike.some((a) => ARTIST_INDEX[pk].has(a)) ? 0.15 : 0));
+}
+const SPONSOR_CACHE = new Map();
+/** Plays of the sponsor's artist this month through `day` (seeded; nobody with a poor fit plays them). */
+function sponsorPlays(pk, sp, day = state.day) {
+  const key = pk + "|" + sp.id;
+  if (!SPONSOR_CACHE.has(key)) {
+    const fit = sponsorFit(pk, sp), rng = mulberry32(hash(`${CONFIG.sim.seed}|${key}|sponsor`)), cum = []; let run = 0;
+    for (let d = 0; d < MONTHS[THIS].days; d++) { run += fit < 0.02 ? 0 : Math.round(fit * CONFIG.sponsorRate * (0.3 + 1.4 * rng())); cum.push(run); }
+    SPONSOR_CACHE.set(key, cum);
+  }
+  return day < 1 ? 0 : SPONSOR_CACHE.get(key)[Math.min(day, MONTHS[THIS].days) - 1];
+}
+/** Sponsored challenges recommended to the viewer from their own listening, best fit first. (gk kept for callers; the pick is per person.) */
 function sponsoredFor(gk) {
-  const members = membersOf(gk);
-  return CONFIG.sponsored.filter((sp) => members.some((pk) => ARTIST_INDEX[pk].has(sp.artist)))
-    .sort((a, b) => state.sponsorJoined.includes(b.id) - state.sponsorJoined.includes(a.id));
+  const me = CONFIG.viewer;
+  return CONFIG.sponsored.filter((sp) => sponsorFit(me, sp) >= CONFIG.sponsorMinFit)
+    .sort((a, b) => sponsorFit(me, b) - sponsorFit(me, a));
 }
 /** The viewer's standing in a sponsored challenge, ranked against every listener in the demo, this month. */
 function sponsorStanding(sp) {
   const scope = { kind: "month", mi: THIS };
-  const pool = Object.keys(DATA.people).map((pk) => ({ pk, plays: playsOf(pk, sp.artist, scope) })).sort((a, b) => b.plays - a.plays || byName(a.pk, b.pk));
+  const pool = Object.keys(DATA.people).map((pk) => ({ pk, plays: sponsorPlays(pk, sp) })).sort((a, b) => b.plays - a.plays || byName(a.pk, b.pk));
   const n = pool.length, rank = rankOf(pool, CONFIG.viewer), me = pool[rank - 1];
   const tiers = sp.rewards.map((r) => {
     const cutoff = r.top || (r.pct ? Math.max(1, Math.ceil((n * r.pct) / 100)) : null);
@@ -749,7 +786,7 @@ function sponsorStanding(sp) {
     const need = qualifies ? 0 : r.min ? r.min - me.plays : pool[cutoff - 1].plays - me.plays + 1;
     return { ...r, label, cutoff, qualifies, need };
   });
-  return { n, rank, plays: me.plays, pct: Math.max(1, Math.ceil((rank / n) * 100)), leader: pool[0], tiers };
+  return { n, rank, plays: me.plays, pct: Math.max(1, Math.ceil((rank / n) * 100)), leader: pool[0], tiers, pool };
 }
 
 /* =====================================================================================
@@ -848,7 +885,7 @@ function renderHome() {
       const sps = sponsoredFor(gk); if (!sps.length) return "";
       const sp = sps[0], joined = state.sponsorJoined.includes(sp.id), st = sponsorStanding(sp);
       const line = joined ? t("spHomeJoined", { title: sp.title, standing: standingText(sp, st) }) : t("spHomeFeatured", { reward: sp.rewards[0].text, artist: sp.artist });
-      return `<button class="row-link sponsor-row" data-action="race-view" data-value="sponsored"><span><span class="sponsor-by">${tx("spBadge")} · ${esc(sp.kind === "artist" ? t("spArtistBy", { artist: sp.artist }) : t("spPromoterBy", { sponsor: sp.sponsor }))}</span><b>${esc(line)}</b></span>${icon("arrow")}</button>`;
+      return `<button class="row-link sponsor-row" data-action="race-view" data-value="sponsored"><span><span class="sponsor-by">${tx("spBadge")} · ${tx("spArtistBy", { artist: sp.artist })}</span><b>${esc(line)}</b></span>${icon("arrow")}</button>`;
     })()}
     <button class="row-link" data-action="open-compare"><span><b>${tx("compareGroups")}</b></span>${icon("arrow")}</button>
     <button class="link center" data-action="reset-demo">${tx("resetDemo")}</button>
@@ -1120,26 +1157,33 @@ function sponsorCard(sp) {
   const st = sponsorStanding(sp), joined = state.sponsorJoined.includes(sp.id);
   return `
   <article class="card sponsor" data-sponsor="${esc(sp.id)}">
-    <div class="row between"><span class="sponsor-by">${esc(sp.kind === "artist" ? t("spArtistBy", { artist: sp.artist }) : t("spPromoterBy", { sponsor: sp.sponsor }))}</span><span class="pill">${tx("spBadge")}</span></div>
+    <div class="row between"><span class="sponsor-by">${tx("spArtistBy", { artist: sp.artist })}</span><span class="pill">${tx("spBadge")}</span></div>
     <h3>${esc(sp.title)}</h3>
+    <p class="small muted">${tx("spSoundsLike", { a: sp.soundsLike[0], b: sp.soundsLike[1] })}</p>
     <p class="small muted">${tx("spRule", { artist: sp.artist, n: st.n })} ${esc(daysLeftText())}.</p>
     <ul class="list-plain tiers">${st.tiers.map((tr) => `
       <li class="${tr.qualifies ? "on" : ""}"><span class="tier-label">${esc(tr.label)}</span><span class="grow">${esc(tr.text)}</span>
         <span class="tier-state small">${tr.qualifies ? `${icon("check")}${tx("spQualify")}` : st.plays || tr.min ? tx("spNeed", { n: playsText(tr.need) }) : ""}</span></li>`).join("")}</ul>
     <div class="row between">
       <div class="grow"><b class="small">${esc(standingText(sp, st))}</b><div class="small muted">${tx("spLeader", { name: who(st.leader.pk), n: playsText(st.leader.plays) })}</div></div>
-      <button class="btn small ${joined ? "ghost" : ""}" data-action="sponsor-join" data-value="${esc(sp.id)}" aria-pressed="${joined}">${joined ? tx("spLeave") : tx("spJoin")}</button>
+      <div class="sp-actions"><button class="btn small ghost" data-action="sponsor-board" data-value="${esc(sp.id)}" aria-haspopup="dialog">${icon("board")}${tx("spBoard")}</button>
+        <button class="btn small ${joined ? "ghost" : ""}" data-action="sponsor-join" data-value="${esc(sp.id)}" aria-pressed="${joined}">${joined ? tx("spLeave") : tx("spJoin")}</button></div>
     </div>
-    <p class="fine">${tx("spDisclaimer")}</p>
+    <p class="fine">${tx("spDisclaimer", { artist: sp.artist })}</p>
   </article>`;
 }
 function renderSponsored() {
-  const sps = sponsoredFor(state.group);
+  // Joined challenges always show (whatever group you're looking at); the rest are the ones relevant to this group's listening.
+  const joined = state.sponsorJoined.map((id) => CONFIG.sponsored.find((sp) => sp.id === id)).filter(Boolean);
+  const more = sponsoredFor(state.group).filter((sp) => !state.sponsorJoined.includes(sp.id));
   return `
   <section class="page">
     ${raceSwitch("sponsored")}
     ${pageHead(t("spTitle"), t("spSectionSub"), simTag())}
-    <div class="block" id="sponsored">${sps.length ? sps.map(sponsorCard).join("") : `<p class="empty">${tx("noChallenges")}</p>`}</div>
+    <section class="block" id="sponsored-joined"><h2>${tx("spJoinedTitle")}</h2>
+      ${joined.length ? joined.map(sponsorCard).join("") : `<p class="empty">${tx("spJoinedEmpty")}</p>`}</section>
+    <section class="block" id="sponsored"><h2>${tx("spMoreTitle")}</h2>
+      ${more.length ? more.map(sponsorCard).join("") : `<p class="empty">${tx("spMoreEmpty")}</p>`}</section>
   </section>`;
 }
 /** Recap numbers for one month of one group. */
@@ -1561,6 +1605,25 @@ function openSwitcher() {
   el.hidden = false;
   el.querySelector("button")?.focus();
 }
+/** Sponsored challenge leaderboard, as a popup in the middle of the screen. Shows which prize each spot would win. */
+function openSponsorBoard(id) {
+  const sp = CONFIG.sponsored.find((x) => x.id === id);
+  if (!sp) return;
+  const st = sponsorStanding(sp);
+  const prizeFor = (r, rank) => st.tiers.find((tr) => r.plays > 0 && (tr.min ? r.plays >= tr.min : rank <= tr.cutoff));
+  const el = $("#sheet");
+  el.innerHTML = `<div class="sheet-backdrop center" data-action="close-sheet"><div class="sheet sp-board" role="dialog" aria-modal="true" aria-labelledby="sp-board-title" tabindex="-1">
+    <div class="row between"><span class="sponsor-by">${tx("spArtistBy", { artist: sp.artist })}</span><button class="link" data-action="sheet-close">${tx("close")}</button></div>
+    <h2 id="sp-board-title">${esc(sp.title)}</h2>
+    <p class="small muted">${tx("spBoardSub", { artist: sp.artist, n: st.n })} ${esc(daysLeftText())}.</p>
+    <ol class="list-plain board-list">${st.pool.map((r, i) => { const tier = prizeFor(r, i + 1); return `
+      <li class="li ${isViewer(r.pk) ? "me" : ""}"><span class="rank">${i + 1}</span>${avatar(r.pk, "sm")}
+        <span class="grow name">${esc(who(r.pk))}</span>${tier ? `<span class="pill tier-pill">${esc(tier.label)}</span>` : ""}<span class="num small">${fmt(r.plays)}</span></li>`; }).join("")}</ol>
+  </div></div>`;
+  el.hidden = false;
+  el.querySelector(".sheet").focus();
+  el.querySelector(".li.me")?.scrollIntoView({ block: "nearest" });
+}
 function closeSheet() { $("#sheet").hidden = true; $("#sheet").innerHTML = ""; }
 
 let toastTimer;
@@ -1655,12 +1718,16 @@ const ACTIONS = {
     hit.ch.accepted = hit.ch.accepted.filter((pk) => !isViewer(pk)); hit.ch.declined.push(CONFIG.viewer); render(); toast(t("challengeLeft"));
   },
   "open-inbox": () => { state.inboxFresh = state.notes.filter((n) => !n.read).map((n) => n.id); state.notes.forEach((n) => { n.read = true; }); overlay("inbox"); },
+  "sponsor-board": (v) => openSponsorBoard(v),
+  "sheet-close": () => closeSheet(),
   "sponsor-join": (v) => {
     const sp = CONFIG.sponsored.find((x) => x.id === v);
     if (!sp) return;
     const on = state.sponsorJoined.includes(v);
     state.sponsorJoined = on ? state.sponsorJoined.filter((x) => x !== v) : [...state.sponsorJoined, v];
     render();
+    // Joining: follow the card up to its new place under "Joined".
+    if (!on) requestAnimationFrame(() => document.querySelector(`#sponsored-joined [data-sponsor="${CSS.escape(v)}"]`)?.scrollIntoView({ behavior: MOTION ? "smooth" : "auto", block: "start" }));
     toast(t(on ? "spLeftToast" : "spJoinedToast", { title: sp.title }));
   },
   "share-tpl": (v) => navigate(() => { state.shareTpl = v; render(); }),
