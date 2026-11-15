@@ -173,6 +173,21 @@ body::before { content: ""; position: fixed; inset: 0 0 auto; height: env(safe-a
 .tier-state svg { width: 14px; height: 14px; }
 .tiers li.on .tier-label, .tiers li.on .tier-state { color: var(--up); }
 .fine { font-size: 11px; color: var(--faint); }
+/* Group challenge invites and the Home inbox */
+/* Back-button screens: keep the logo on the right instead of on top of "Back" (.brand is absolutely positioned for the scroll title swap) */
+.top .brand.brand-inline { position: static; inset: auto; margin-left: auto; animation: none; }
+.top-right { display: flex; align-items: center; gap: var(--sp-2); min-width: 0; max-width: 70%; }
+.top-right .switcher { max-width: 100%; min-width: 0; }
+.inbox-btn { position: relative; flex: none; width: 36px; height: 36px; border-radius: 50%; border: 0; background: var(--s2); color: var(--fg); display: grid; place-items: center; }
+.inbox-btn svg { width: 18px; height: 18px; }
+.inbox-btn .badge { position: absolute; top: -4px; right: -4px; min-width: 18px; height: 18px; padding: 0 5px; border-radius: 999px; background: var(--accent); color: var(--accent-ink);
+  font: 700 11px/18px var(--body); text-align: center; box-shadow: 0 0 0 2px var(--bg); }
+.card .chip { background: var(--s2); }
+.pick-chip { display: inline-flex; align-items: center; gap: 6px; border: 0; color: var(--fg); padding: 5px 12px 5px 5px; }
+.pick-chip[aria-pressed="true"] { background: var(--accent); color: var(--accent-ink); }
+.card.invite { box-shadow: inset 0 0 0 1px #FF8A4C66; }
+.replies .reply { display: flex; align-items: center; gap: var(--sp-2); padding: 4px 0; }
+.reply.yes .small { color: var(--up); } .reply.no .small { color: var(--down); } .reply.wait .small { color: var(--muted); }
 
 /* Match */
 .ring-wrap { position: relative; width: 176px; height: 176px; margin: 0 auto; }
@@ -328,7 +343,7 @@ const CONFIG = {
   // gold and coral are its neighbors (analogous), teal is its opposite (complementary), violet is triadic.
   theme: {
     screens: { home: "#FF8A4C", rank: "#F2B33D", match: "#FF5E7A", challenges: "#2FB8C4", sponsored: "#2FB8C4", recap: "#8C6BFF",
-               compare: "#FF8A4C", share: "#FF8A4C", join: "#FF8A4C" },
+               compare: "#FF8A4C", share: "#FF8A4C", join: "#FF8A4C", inbox: "#FF8A4C" },
     strength: "66",                      // gradient opacity as a hex alpha (00-FF)
     // Group Sound donut: the tab colors, alternating warm and cool so neighboring slices stay distinct.
     sound: ["#FF8A4C", "#2FB8C4", "#F2B33D", "#8C6BFF", "#FF5E7A"],
@@ -361,19 +376,25 @@ const CONFIG = {
     alertMinPlays: 5,                    // ignore passes below this many plays (too early in the month to matter)
   },
 
-  // Challenges each group starts with (max two active on the free plan). Targets are plays this month.
+  // Group challenges. Members invite one friend (head-to-head) or several (group race); invitees accept or decline.
+  // Most plays of the artist this month wins. These are already running when the demo opens.
   challenges: {
     pop: [
-      { type: "duel",  a: "grace", b: "sofia", artist: "Taylor Swift", stakes: "Loser builds the next group playlist" },
-      { type: "goal",  artist: "Lady Gaga", target: 900, stakes: "Karaoke night if we hit it" },
+      { id: "pop-taylor", from: "grace", invited: ["sofia"], accepted: ["sofia"], declined: [], artist: "Taylor Swift", stakes: "Loser builds the next group playlist", sentDay: 12 },
     ],
     hiphop: [
-      { type: "duel",      a: "isaac", b: "noah", artist: "Kanye West", stakes: "Loser buys the concert tickets" },
-      { type: "recommend", a: "grace", b: "nina", artist: "Ariana Grande", target: 15, stakes: "Nina picks Grace's next album" },
+      { id: "hiphop-kanye", from: "isaac", invited: ["noah"], accepted: ["noah"], declined: [], artist: "Kanye West", stakes: "Loser buys the concert tickets", sentDay: 10 },
     ],
     kpop: [],
   },
-  freeChallengeLimit: 2,
+  // Invites friends send the viewer. They land in the inbox on day `arrive` (others: friends who already said yes).
+  incoming: [
+    { id: "in-eli-dua", gk: "pop", from: "eli", others: ["chloe", "zoe"], artist: "Dua Lipa", stakes: "Last place makes the road trip playlist", arrive: 17 },
+    { id: "in-noah-kendrick", gk: "hiphop", from: "noah", others: [], artist: "Kendrick Lamar", stakes: "Loser buys the concert tickets", arrive: 18 },
+    { id: "in-zoe-gaga", gk: "pop", from: "zoe", others: [], artist: "Lady Gaga", stakes: "Winner picks the karaoke songs", arrive: 20 },
+  ],
+  replyAcceptRate: 0.8,                  // chance a friend accepts the viewer's invite (seeded per invite)
+  freeChallengeLimit: 3,                 // challenges per group the viewer can be in (or waiting on) at once
 
   // Sponsored challenges, paid for by concert promoters or an artist's team. Example sponsors for the demo only.
   // Ranked on plays this month against every listener in the demo. Rewards: top N, top N %, or N+ plays.
@@ -446,18 +467,33 @@ const TEXT = {
   sharedArtists: "Shared artists", noShared: "No artists in common. Time for a recommendation.",
   twins: "Musical twins", opposites: "Musical opposites", pickTwo: "Pick two different people.",
   // Challenges
-  challengesLede: "{n} of {max} active · {left}", challengesTitle: "Group challenges", activeChallenges: "Active challenges ({n} of {max})", noChallenges: "No active challenges. Start one.",
-  newChallenge: "New challenge", createChallenge: "Start challenge", cancel: "Cancel", endChallenge: "End",
-  challengeLimit: "The free plan allows two challenges at a time. End one to start another.",
-  challengeCreated: "Challenge started.", challengeEnded: "Challenge ended.",
-  typeDuel: "Biggest fan duel", typeRecommend: "Recommend and convert", typeGoal: "Group goal",
-  duelTitle: "{a} vs {b} · {artist}", duelLead: "{name} leads by {n}", duelLeadYou: "You lead by {n}", duelTied: "All tied",
-  recommendTitle: "{a} recommends {artist} to {b}", recommendTitleYou: "You recommend {artist} to {b}", recommendProgress: "{b}: {n} of {target} plays", recommendDone: "{b} converted!",
-  goalTitle: "{target} plays of {artist}", goalProgress: "{n} of {target} plays", goalDone: "Goal reached!",
+  challengesLede: "{n} of {max} slots used · {left}", challengesTitle: "Group challenges", noChallenges: "No challenges running yet.",
+  newChallenge: "New challenge", cancel: "Cancel", endChallenge: "End", leaveChallenge: "Leave", cancelChallenge: "Cancel",
+  challengeLimit: "You can be in {max} challenges per group at a time. End or leave one to start another.",
+  challengeEnded: "Challenge ended.", challengeLeft: "You left the challenge.", challengeCancelled: "Challenge cancelled.",
+  typeDuel: "Head-to-head", typeRace: "Group race · {n} players",
+  duelTitle: "{a} vs {b} · {artist}", raceTitle2: "Group race · {artist}",
+  duelLead: "{name} leads by {n}", duelLeadYou: "You lead by {n}", duelTied: "All tied",
   daysLeft: "{n} days left", oneDayLeft: "1 day left", lastDay: "Last day",
-  stakes: "Stakes: {stakes}",
-  fieldType: "Type", fieldYou: "You", fieldOpponent: "Opponent", fieldFriend: "Friend", fieldArtist: "Artist", fieldTarget: "Target plays", fieldStakes: "Stakes",
-  defaultStakes: "Bragging rights",
+  stakes: "Stakes: {stakes}", fieldArtist: "Artist", fieldStakes: "Stakes", defaultStakes: "Bragging rights",
+  pickLabel: "Who are you challenging?", pickHint: "Pick one friend for a head-to-head, or several for a group race.",
+  pickDuel: "Head-to-head with {name}.", pickRace: "Group race with {n} friends.",
+  sendOne: "Send challenge", sendMany: "Send to {n}",
+  sentToast: "Challenge sent to {names}. Their answers will show up in your inbox.",
+  invitesTitle: "Challenges for you", sentTitle: "Waiting on replies", activeTitle: "Running",
+  waitingReplies: "waiting", replyYes: "Accepted", replyNo: "Declined", replyWait: "Waiting",
+  replyHint: "Friends reply within a day. Tap the Day button to move time forward.",
+  nobodyAccepted: "Nobody accepted this one.", dismiss: "Dismiss",
+  inviteDuel: "{name} challenged you", inviteRace: "{name} invited you to a group race", inviteWith: "With {names}",
+  accept: "Accept", decline: "Decline", acceptedToast: "You're in: {title}.", declinedToast: "You declined {name}'s challenge.",
+  inviteArrived: "{name} sent you a challenge. Check your inbox.",
+  homeInvites: "{n} invites waiting for you", homeInvitesOne: "1 invite waiting for you",
+  // Inbox
+  inboxTitle: "Inbox", inboxButton: "Inbox", inboxButtonCount: "Inbox, {n} new",
+  inboxLede: "{n} challenges are waiting for your answer.", inboxLedeOne: "1 challenge is waiting for your answer.", inboxLedeNone: "You're all caught up.",
+  updatesTitle: "Updates", noInvites: "No challenges waiting for you.", noUpdates: "When friends answer your challenges, it shows up here.",
+  noteAccepted: "{name} accepted your {artist} challenge.", noteDeclined: "{name} declined your {artist} challenge.",
+  repliesToast: "{n} friends replied to your challenges.", replyToastOne: "{text}",
   // Sponsored challenges
   spTitle: "Sponsored challenges", spSectionSub: "Paid for by promoters and artists. They don't use your free challenge slots.",
   spPromoterBy: "Presented by {sponsor}", spArtistBy: "Promoted by {artist}'s team", spBadge: "Sponsored",
@@ -538,6 +574,7 @@ const ICONS = {
   forward: '<path d="M6 4l10 8-10 8z"/><path d="M19 5v14"/>',
   rewind: '<path d="M18 20 8 12l10-8z"/><path d="M5 19V5"/>',
   check: '<path d="M20 6 9 17l-5-5"/>',
+  inbox: '<path d="M22 12h-6l-2 3h-4l-2-3H2"/><path d="M5.45 5.11 2 12v6a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2v-6l-3.45-6.89A2 2 0 0 0 16.76 4H7.24a2 2 0 0 0-1.79 1.11z"/>',
   save: '<path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><path d="m7 10 5 5 5-5"/><path d="M12 15V3"/>',
   crown: '<path d="M11.56 3.27a.5.5 0 0 1 .88 0l2.95 5.6a1 1 0 0 0 1.52.29l4.27-3.66a.5.5 0 0 1 .8.52l-2.83 10.24a1 1 0 0 1-.96.74H5.81a1 1 0 0 1-.96-.74L2.02 6.02a.5.5 0 0 1 .8-.52l4.27 3.66a1 1 0 0 0 1.52-.29z"/><path d="M5 21h14"/>',
 };
@@ -554,7 +591,7 @@ function pick(cum, r) { const x = r * cum[cum.length - 1]; let lo = 0, hi = cum.
 /* ----- Storage: optional convenience only; the app works without it ----- */
 const STORE_KEY = "jamvibe-demo-v1";
 function loadSaved() { try { return JSON.parse(localStorage.getItem(STORE_KEY) || "null"); } catch { return null; } }
-function save() { try { localStorage.setItem(STORE_KEY, JSON.stringify({ joined: state.joined, challenges: state.challenges, day: state.day, group: state.group, sponsorJoined: state.sponsorJoined })); } catch { /* storage blocked: keep in memory */ } }
+function save() { try { localStorage.setItem(STORE_KEY, JSON.stringify({ joined: state.joined, challenges: state.challenges, day: state.day, group: state.group, sponsorJoined: state.sponsorJoined, notes: state.notes, seenInvites: state.seenInvites })); } catch { /* storage blocked: keep in memory */ } }
 function clearSaved() { try { localStorage.removeItem(STORE_KEY); } catch { /* ignore */ } }
 
 /* =====================================================================================
@@ -724,7 +761,11 @@ const state = {
   group: saved?.group && CONFIG.groups[saved.group] ? saved.group : CONFIG.startJoined[0],
   joined: Array.isArray(saved?.joined) ? saved.joined.filter((g) => CONFIG.groups[g]) : [...CONFIG.startJoined],
   day: Number.isInteger(saved?.day) ? Math.min(Math.max(saved.day, 1), MONTHS[THIS].days) : CONFIG.sim.startDay,
-  challenges: saved?.challenges || structuredClone(CONFIG.challenges),
+  // Saved challenges from an older version of the demo (different shape) are replaced with the starting ones.
+  challenges: saved?.challenges && Object.values(saved.challenges).every((l) => Array.isArray(l) && l.every((c) => c && Array.isArray(c.invited)))
+    ? saved.challenges : structuredClone(CONFIG.challenges),
+  notes: Array.isArray(saved?.notes) ? saved.notes : [],               // inbox updates: friends' replies to the viewer's challenges
+  seenInvites: Array.isArray(saved?.seenInvites) ? saved.seenInvites : [], inboxFresh: [],
   rankScope: "this", recapScope: "this", rankArtist: null, rankSearch: "",
   soundFocus: null,
   matchA: CONFIG.viewer, matchB: null, compareA: null, compareB: null, shareArtist: null,
@@ -771,8 +812,10 @@ function raceSentence(race) {
 function renderHome() {
   const gk = state.group, g = CONFIG.groups[gk], m = MONTHS[THIS], members = membersOf(gk);
   const alerts = alertsFor(gk, state.day).reverse().slice(0, 3), sound = groupSound(gk);
-  const chs = (state.challenges[gk] || []).filter((c) => validChallenge(c, gk)), left = daysLeftText();
-  const chLine = !chs.length ? t("homeChallengesNone") : chs.length === 1 ? t("homeChallengesOne", { left }) : t("homeChallenges", { n: chs.length, left });
+  deliverInvites();
+  const chs = groupChallenges(gk).filter((c) => chStatus(c) === "active"), left = daysLeftText(), inv = groupChallenges(gk).filter(viewerInvited).length;
+  const chLine = inv ? t(inv === 1 ? "homeInvitesOne" : "homeInvites", { n: inv })
+    : !chs.length ? t("homeChallengesNone") : chs.length === 1 ? t("homeChallengesOne", { left }) : t("homeChallenges", { n: chs.length, left });
   return `
   <section class="page">
     ${pageHead(g.name, raceSentence(closestRace(gk)))}
@@ -902,29 +945,172 @@ function renderMatch() {
   </section>`;
 }
 
-/** Progress for one challenge in the current month. */
-function challengeView(ch, gk) {
-  const scope = { kind: "month", mi: THIS }, type = { duel: "typeDuel", recommend: "typeRecommend", goal: "typeGoal" }[ch.type];
-  if (ch.type === "duel") {
-    const na = playsOf(ch.a, ch.artist, scope), nb = playsOf(ch.b, ch.artist, scope), max = Math.max(na, nb, 1);
-    const leader = na > nb ? ch.a : ch.b;
-    const lead = na === nb ? t("duelTied") : tYou("duelLead", leader, { name: who(leader), n: playsText(Math.abs(na - nb)) });
-    return { type, title: t("duelTitle", { a: who(ch.a), b: who(ch.b, false), artist: ch.artist }), status: lead,
-      bars: [[ch.a, na, max], [ch.b, nb, max]] };
+/* ----- Group challenges: members invite each other; nobody is in a challenge until they accept -----
+   A challenge: { id, from, invited: [pk], accepted: [pk], declined: [pk], artist, stakes, sentDay }.
+   One invitee = head-to-head, two or more = group race. Most plays of the artist this month wins. */
+const isViewer = (pk) => pk === CONFIG.viewer;
+const chWaiting = (ch) => ch.invited.filter((pk) => !ch.accepted.includes(pk) && !ch.declined.includes(pk));
+const chPlayers = (ch) => [ch.from, ...ch.accepted];
+const chIsDuel = (ch) => ch.invited.length === 1;
+/** pending: someone hasn't replied · active: replies are in and someone accepted · cancelled: everyone declined */
+function chStatus(ch) { return chWaiting(ch).length ? "pending" : ch.accepted.length ? "active" : "cancelled"; }
+const viewerPlays = (ch) => ch.from === CONFIG.viewer || ch.accepted.includes(CONFIG.viewer);
+const viewerInvited = (ch) => chWaiting(ch).includes(CONFIG.viewer);
+const validCh = (c) => c && typeof c.id === "string" && typeof c.from === "string" && Array.isArray(c.invited) && Array.isArray(c.accepted) && Array.isArray(c.declined);
+
+/** Invites from friends arrive on their day (CONFIG.incoming), once, in groups the viewer has joined. Returns the new ones. */
+function deliverInvites() {
+  const fresh = [];
+  for (const inc of CONFIG.incoming) {
+    if (inc.arrive > state.day || state.seenInvites.includes(inc.id) || !state.joined.includes(inc.gk)) continue;
+    state.seenInvites.push(inc.id);
+    (state.challenges[inc.gk] ||= []).push({ id: inc.id, from: inc.from, invited: [...inc.others, CONFIG.viewer], accepted: [...inc.others], declined: [],
+      artist: inc.artist, stakes: inc.stakes, sentDay: inc.arrive });
+    fresh.push(inc);
   }
-  if (ch.type === "recommend") {
-    const n = playsOf(ch.b, ch.artist, scope);
-    return { type, title: tYou("recommendTitle", ch.a, { a: who(ch.a), b: who(ch.b, false), artist: ch.artist }),
-      status: n >= ch.target ? t("recommendDone", { b: who(ch.b) }) : t("recommendProgress", { b: who(ch.b), n: fmt(n), target: fmt(ch.target) }),
-      bars: [[ch.b, Math.min(n, ch.target), ch.target]] };
-  }
-  const n = membersOf(gk).reduce((s, pk) => s + playsOf(pk, ch.artist, scope), 0);
-  return { type, title: t("goalTitle", { target: fmt(ch.target), artist: ch.artist }),
-    status: n >= ch.target ? t("goalDone") : t("goalProgress", { n: fmt(n), target: fmt(ch.target) }), bars: [[null, Math.min(n, ch.target), ch.target]] };
+  return fresh;
 }
-function validChallenge(ch, gk) {
+function groupChallenges(gk) {
   const m = membersOf(gk);
-  return ["duel", "recommend", "goal"].includes(ch.type) && (ch.type === "goal" || (m.includes(ch.a) && m.includes(ch.b)));
+  return (state.challenges[gk] || []).filter((c) => validCh(c) && m.includes(c.from));
+}
+/** Challenges that use one of the viewer's slots in a group: ones they play in, plus ones they sent that are still waiting. */
+const slotsUsed = (gk) => groupChallenges(gk).filter((c) => viewerPlays(c) && chStatus(c) !== "cancelled").length;
+/** Every challenge waiting on the viewer's reply, across their groups, newest first. */
+function invitesForViewer() {
+  return state.joined.flatMap((gk) => groupChallenges(gk).filter(viewerInvited).map((ch) => ({ gk, ch }))).sort((a, b) => b.ch.sentDay - a.ch.sentDay);
+}
+const unreadCount = () => invitesForViewer().length + state.notes.filter((n) => !n.read).length;
+function findCh(id) {
+  for (const gk of Object.keys(state.challenges)) { const ch = groupChallenges(gk).find((c) => c.id === id); if (ch) return { gk, ch }; }
+  return null;
+}
+
+/** Friends answer the viewer's invites on the next simulated day (seeded, so the demo is repeatable). */
+function simulateReplies() {
+  const out = [];
+  for (const gk of Object.keys(state.challenges)) for (const ch of groupChallenges(gk)) {
+    if (ch.from !== CONFIG.viewer || ch.sentDay >= state.day) continue;
+    for (const pk of chWaiting(ch)) {
+      const yes = mulberry32(hash(`${ch.id}|${pk}|reply`))() < CONFIG.replyAcceptRate;
+      (yes ? ch.accepted : ch.declined).push(pk);
+      const note = { id: `${ch.id}|${pk}`, gk, pk, artist: ch.artist, yes, day: state.day, read: false };
+      state.notes.unshift(note); out.push(note);
+    }
+  }
+  state.notes = state.notes.slice(0, 30);
+  return out;
+}
+
+function chTitle(ch) {
+  return chIsDuel(ch) ? t("duelTitle", { a: who(ch.from), b: who(ch.invited[0], false), artist: ch.artist }) : t("raceTitle2", { artist: ch.artist });
+}
+const chTypeLabel = (ch) => (chIsDuel(ch) ? t("typeDuel") : t("typeRace", { n: ch.invited.length + 1 }));
+/** Standings among the people playing, this month. */
+function chStandings(ch) {
+  const scope = { kind: "month", mi: THIS };
+  return chPlayers(ch).map((pk) => ({ pk, n: playsOf(pk, ch.artist, scope) })).sort((a, b) => b.n - a.n || byName(a.pk, b.pk));
+}
+function chStatusLine(rows) {
+  const [a, b] = rows;
+  if (!b) return "";
+  return a.n === b.n ? t("duelTied") : tYou("duelLead", a.pk, { name: who(a.pk), n: playsText(a.n - b.n) });
+}
+const replyText = (n) => tYou(n.yes ? "noteAccepted" : "noteDeclined", n.pk, { name: nameOf(n.pk), artist: n.artist });
+
+/* ----- Cards ----- */
+function activeCard(ch) {
+  const rows = chStandings(ch), max = Math.max(1, rows[0]?.n || 0);
+  return `<div class="card" data-ch="${esc(ch.id)}">
+    <div class="row between"><span class="ch-type">${esc(chTypeLabel(ch))}</span>
+      ${viewerPlays(ch) ? `<button class="link" data-action="${ch.from === CONFIG.viewer ? "ch-end" : "ch-leave"}" data-value="${esc(ch.id)}">${tx(ch.from === CONFIG.viewer ? "endChallenge" : "leaveChallenge")}</button>` : ""}</div>
+    <h3>${esc(chTitle(ch))}</h3>
+    ${rows.map((r) => `<div class="row">${avatar(r.pk, "xs")}<div class="bar grow"><i style="width:${(r.n / max) * 100}%"></i></div><span class="num small">${fmt(r.n)}</span></div>`).join("")}
+    <div class="row between small"><b>${esc(chStatusLine(rows))}</b><span class="muted">${esc(daysLeftText())}</span></div>
+    <p class="small muted">${tx("stakes", { stakes: ch.stakes })}</p>
+  </div>`;
+}
+/** A challenge the viewer sent that's still waiting on replies. */
+function sentCard(ch) {
+  const state_ = (pk) => (ch.accepted.includes(pk) ? ["yes", t("replyYes")] : ch.declined.includes(pk) ? ["no", t("replyNo")] : ["wait", t("replyWait")]);
+  return `<div class="card pending" data-ch="${esc(ch.id)}">
+    <div class="row between"><span class="ch-type">${esc(chTypeLabel(ch))} · ${tx("waitingReplies")}</span>
+      <button class="link" data-action="ch-end" data-value="${esc(ch.id)}">${tx("cancelChallenge")}</button></div>
+    <h3>${esc(chTitle(ch))}</h3>
+    <ul class="list-plain replies">${ch.invited.map((pk) => { const [k, label] = state_(pk); return `<li class="reply ${k}">${avatar(pk, "xs")}<span class="grow">${esc(nameOf(pk))}</span><span class="small">${esc(label)}</span></li>`; }).join("")}</ul>
+    <p class="small muted">${tx("stakes", { stakes: ch.stakes })}</p>
+    <p class="fine">${tx("replyHint")}</p>
+  </div>`;
+}
+/** A challenge waiting on the viewer: Accept or Decline. showGroup adds the group name (inbox). */
+function inviteCard(ch, gk, showGroup = false) {
+  const others = ch.invited.filter((pk) => !isViewer(pk));
+  return `<div class="card invite" data-ch="${esc(ch.id)}">
+    <div class="row">${avatar(ch.from, "sm")}<div class="grow"><b>${tx(chIsDuel(ch) ? "inviteDuel" : "inviteRace", { name: nameOf(ch.from) })}</b>
+      <div class="small muted">${showGroup ? `${esc(CONFIG.groups[gk].name)} · ` : ""}${tx("alertDay", { day: ch.sentDay })}</div></div></div>
+    <h3>${esc(chTitle(ch))}</h3>
+    ${others.length ? `<div class="row small muted"><div class="avs">${others.map((pk) => avatar(pk, "xs")).join("")}</div><span>${tx("inviteWith", { names: others.map(nameOf).join(", ") })}</span></div>` : ""}
+    <p class="small muted">${tx("stakes", { stakes: ch.stakes })}</p>
+    <div class="two"><button class="btn ghost small" data-action="ch-decline" data-value="${esc(ch.id)}">${tx("decline")}</button><button class="btn small" data-action="ch-accept" data-value="${esc(ch.id)}">${tx("accept")}</button></div>
+  </div>`;
+}
+
+function renderChallenges() {
+  deliverInvites();
+  const gk = state.group, all = groupChallenges(gk), max = CONFIG.freeChallengeLimit;
+  const invites = all.filter(viewerInvited), sent = all.filter((c) => c.from === CONFIG.viewer && chStatus(c) === "pending");
+  const active = all.filter((c) => chStatus(c) === "active").sort((a, b) => viewerPlays(b) - viewerPlays(a));
+  const declined = all.filter((c) => c.from === CONFIG.viewer && chStatus(c) === "cancelled");
+  return `
+  <section class="page">
+    ${raceSwitch("challenges")}
+    ${pageHead(t("challengesTitle"), t("challengesLede", { n: slotsUsed(gk), max, left: daysLeftText() }), simTag())}
+    ${invites.length ? `<section class="block"><h2>${tx("invitesTitle")}</h2>${invites.map((ch) => inviteCard(ch, gk)).join("")}</section>` : ""}
+    ${sent.length ? `<section class="block"><h2>${tx("sentTitle")}</h2>${sent.map(sentCard).join("")}</section>` : ""}
+    ${declined.map((ch) => `<div class="card pending"><p><b>${esc(chTitle(ch))}</b></p><p class="small muted">${tx("nobodyAccepted")}</p>
+      <button class="link" data-action="ch-end" data-value="${esc(ch.id)}">${tx("dismiss")}</button></div>`).join("")}
+    <section class="block"><h2>${tx("activeTitle")}</h2>
+      ${active.length ? active.map(activeCard).join("") : `<p class="empty">${tx("noChallenges")}</p>`}</section>
+    ${state.challengeForm ? challengeFormHtml(gk) : `<button class="btn" data-action="new-challenge">${tx("newChallenge")}</button>`}
+  </section>`;
+}
+function challengeFormHtml(gk) {
+  if (slotsUsed(gk) >= CONFIG.freeChallengeLimit) {
+    return `<div class="card"><p>${tx("challengeLimit", { max: CONFIG.freeChallengeLimit })}</p><button class="btn ghost" data-action="close-form">${tx("cancel")}</button></div>`;
+  }
+  const f = state.challengeForm, others = membersOf(gk).filter((pk) => !isViewer(pk));
+  f.picked = f.picked.filter((pk) => others.includes(pk));
+  const artists = groupArtists(gk, { kind: "all" }).slice(0, 40).map(([a]) => a);
+  if (!artists.includes(f.artist)) f.artist = artists[0];
+  const n = f.picked.length;
+  const hint = n === 0 ? t("pickHint") : n === 1 ? t("pickDuel", { name: nameOf(f.picked[0]) }) : t("pickRace", { n });
+  return `
+  <div class="card" id="challenge-form">
+    <h2>${tx("newChallenge")}</h2>
+    <div class="field"><span id="pick-label">${tx("pickLabel")}</span>
+      <div class="chips" role="group" aria-labelledby="pick-label">${others.map((pk) => `<button class="chip pick-chip" data-action="ch-pick" data-value="${pk}" aria-pressed="${f.picked.includes(pk)}">${avatar(pk, "xs")}${esc(nameOf(pk))}</button>`).join("")}</div>
+      <span class="small muted" aria-live="polite">${esc(hint)}</span></div>
+    <label class="field" for="ch-artist">${tx("fieldArtist")}<select class="input" id="ch-artist">${artists.map((a) => `<option value="${esc(a)}" ${a === f.artist ? "selected" : ""}>${esc(a)}</option>`).join("")}</select></label>
+    <label class="field" for="ch-stakes">${tx("fieldStakes")}<input class="input" id="ch-stakes" maxlength="80" value="${esc(f.stakes ?? t("defaultStakes"))}"></label>
+    <div class="two"><button class="btn ghost" data-action="close-form">${tx("cancel")}</button>
+      <button class="btn" data-action="ch-send" ${n ? "" : "disabled"}>${n > 1 ? tx("sendMany", { n }) : tx("sendOne")}</button></div>
+  </div>`;
+}
+
+/** Inbox (opened from the top right of Home): invites to answer, then replies to the viewer's own challenges. */
+function renderInbox() {
+  deliverInvites();
+  const invites = invitesForViewer(), notes = state.notes;
+  return `
+  <section class="page">
+    ${pageHead(t("inboxTitle"), invites.length ? t(invites.length === 1 ? "inboxLedeOne" : "inboxLede", { n: invites.length }) : t("inboxLedeNone"))}
+    <section class="block"><h2>${tx("invitesTitle")}</h2>
+      ${invites.length ? invites.map(({ gk, ch }) => inviteCard(ch, gk, true)).join("") : `<p class="empty">${tx("noInvites")}</p>`}</section>
+    <section class="block"><h2>${tx("updatesTitle")}</h2>
+      ${notes.length ? `<ol class="list-plain feed">${notes.map((n) => `<li class="${state.inboxFresh.includes(n.id) ? "is-new" : ""}">${avatar(n.pk, "sm")}<p>${esc(replyText(n))}</p>
+        <span class="when">${state.inboxFresh.includes(n.id) ? tx("newAlert") : `${esc(CONFIG.groups[n.gk]?.name || "")} · ${tx("alertDay", { day: n.day })}`}</span></li>`).join("")}</ol>`
+        : `<p class="empty">${tx("noUpdates")}</p>`}</section>
+  </section>`;
 }
 
 function standingText(sp, st) {
@@ -956,46 +1142,6 @@ function renderSponsored() {
     <div class="block" id="sponsored">${sps.length ? sps.map(sponsorCard).join("") : `<p class="empty">${tx("noChallenges")}</p>`}</div>
   </section>`;
 }
-function renderChallenges() {
-  const gk = state.group, list = (state.challenges[gk] || []).filter((c) => validChallenge(c, gk)), max = CONFIG.freeChallengeLimit;
-  return `
-  <section class="page">
-    ${raceSwitch("challenges")}
-    ${pageHead(t("challengesTitle"), t("challengesLede", { n: list.length, max, left: daysLeftText() }), simTag())}
-    ${list.length ? list.map((ch, i) => { const v = challengeView(ch, gk); return `
-      <div class="card">
-        <div class="row between"><span class="ch-type">${esc(v.type)}</span><button class="link" data-action="end-challenge" data-value="${i}">${tx("endChallenge")}</button></div>
-        <h3>${esc(v.title)}</h3>
-        ${v.bars.map(([pk, n, of]) => `<div class="row">${pk ? avatar(pk, "xs") : ""}<div class="bar grow"><i style="width:${(n / of) * 100}%"></i></div><span class="num small">${fmt(n)}</span></div>`).join("")}
-        <div class="row between small"><b>${esc(v.status)}</b><span class="muted">${esc(daysLeftText())}</span></div>
-        <p class="small muted">${tx("stakes", { stakes: ch.stakes })}</p>
-      </div>`; }).join("") : `<p class="empty">${tx("noChallenges")}</p>`}
-    ${state.challengeForm ? challengeFormHtml(gk) : `<button class="btn" data-action="new-challenge">${tx("newChallenge")}</button>`}
-  </section>`;
-}
-function challengeFormHtml(gk) {
-  const list = (state.challenges[gk] || []).filter((c) => validChallenge(c, gk));
-  if (list.length >= CONFIG.freeChallengeLimit) {
-    return `<div class="card"><p>${tx("challengeLimit")}</p><button class="btn ghost" data-action="close-form">${tx("cancel")}</button></div>`;
-  }
-  const f = state.challengeForm, members = membersOf(gk), me = members.includes(CONFIG.viewer) ? CONFIG.viewer : members[0];
-  const others = members.filter((m) => m !== me);
-  const artists = groupArtists(gk, { kind: "all" }).slice(0, 40).map(([a]) => a);
-  const opt = (vals, cur, label = (v) => v) => vals.map((v) => `<option value="${esc(v)}" ${v === cur ? "selected" : ""}>${esc(label(v))}</option>`).join("");
-  return `
-  <div class="card" id="challenge-form">
-    <h2>${tx("newChallenge")}</h2>
-    <label class="field" for="ch-type">${tx("fieldType")}
-      <select class="input" id="ch-type">${opt(["duel", "recommend", "goal"], f.type, (v) => t({ duel: "typeDuel", recommend: "typeRecommend", goal: "typeGoal" }[v]))}</select></label>
-    ${f.type !== "goal" ? `<label class="field" for="ch-b">${f.type === "duel" ? tx("fieldOpponent") : tx("fieldFriend")}
-      <select class="input" id="ch-b">${opt(others, f.b || others[0], nameOf)}</select></label>` : ""}
-    <label class="field" for="ch-artist">${tx("fieldArtist")}<select class="input" id="ch-artist">${opt(artists, f.artist || artists[0])}</select></label>
-    ${f.type !== "duel" ? `<label class="field" for="ch-target">${tx("fieldTarget")}<input class="input" id="ch-target" type="number" min="1" max="100000" value="${f.type === "goal" ? 500 : 15}"></label>` : ""}
-    <label class="field" for="ch-stakes">${tx("fieldStakes")}<input class="input" id="ch-stakes" maxlength="80" value="${tx("defaultStakes")}"></label>
-    <div class="two"><button class="btn ghost" data-action="close-form">${tx("cancel")}</button><button class="btn" data-action="create-challenge">${tx("createChallenge")}</button></div>
-  </div>`;
-}
-
 /** Recap numbers for one month of one group. */
 function recapData(gk, mi) {
   const scope = { kind: "month", mi }, members = membersOf(gk);
@@ -1346,10 +1492,15 @@ const TABS = [["home", "navHome", "home"], ["rank", "navRace", "race"], ["match"
 const RACE = ["rank", "challenges", "sponsored"];   // Race tab views, left to right
 const tabOf = (tab) => (RACE.includes(tab) ? "rank" : tab);
 const tabIndex = (tab) => TABS.findIndex(([k]) => k === tabOf(tab));
-const SCREENS = { home: renderHome, rank: renderRank, challenges: renderChallenges, sponsored: renderSponsored, match: renderMatch, recap: renderRecap, share: renderShare, compare: renderCompare, join: renderJoin };
+const SCREENS = { home: renderHome, rank: renderRank, challenges: renderChallenges, sponsored: renderSponsored, match: renderMatch, recap: renderRecap, share: renderShare, compare: renderCompare, join: renderJoin, inbox: renderInbox };
 const TITLES = { home: () => CONFIG.groups[state.group].name, rank: () => state.rankArtist || t("raceBoards"), challenges: () => t("challengesTitle"), sponsored: () => t("spTitle"),
-  match: () => t("matchTitle"), recap: () => t("navRecap"), share: () => t("shareTitle"), compare: () => t("compareTitle"), join: () => t("joinTitle") };
+  match: () => t("matchTitle"), recap: () => t("navRecap"), share: () => t("shareTitle"), compare: () => t("compareTitle"), join: () => t("joinTitle"), inbox: () => t("inboxTitle") };
 
+function inboxButton() {
+  deliverInvites();   // the top bar draws before the screen, so deliver today's invites first
+  const n = unreadCount();
+  return `<button class="inbox-btn" data-action="open-inbox" aria-label="${n ? tx("inboxButtonCount", { n }) : tx("inboxButton")}" title="${tx("inboxButton")}">${icon("inbox", "")}${n ? `<span class="badge" aria-hidden="true">${n > 9 ? "9+" : n}</span>` : ""}</button>`;
+}
 function brandHtml() { const n = CONFIG.appName, i = Math.ceil(n.length / 2); return /^Jam/.test(n) ? `Jam<b>${esc(n.slice(3))}</b>` : `${esc(n.slice(0, i))}<b>${esc(n.slice(i))}</b>`; }
 function buildNav() {
   $("#nav").innerHTML = `<span class="nav-ind" aria-hidden="true"></span>` +
@@ -1381,7 +1532,7 @@ function render() {
   $("#top").innerHTML = state.overlay
     ? `<button class="back" data-action="close-overlay">${icon("back")}${tx("back")}</button><span class="brand-inline brand">${brandHtml()}</span>`
     : `<div class="top-left"><span class="brand">${brandHtml()}</span><span class="top-title" aria-hidden="true">${esc(TITLES[screen]())}</span></div>
-       <button class="switcher" data-action="open-switcher" aria-haspopup="dialog"><span>${esc(CONFIG.groups[state.group].name)}</span>${icon("chevron")}</button>`;
+       <div class="top-right">${screen === "home" ? inboxButton() : ""}<button class="switcher" data-action="open-switcher" aria-haspopup="dialog"><span>${esc(CONFIG.groups[state.group].name)}</span>${icon("chevron")}</button></div>`;
   const key = screen + "|" + state.group, entering = key !== lastScreenKey;
   lastScreenKey = key;
   const snap = entering ? null : snapshotMotion();
@@ -1447,8 +1598,11 @@ const ACTIONS = {
     state.day += 1;
     const fresh = alertsFor(state.group, state.day).filter((a) => a.day === state.day);
     state.newAlertDay = fresh.length ? state.day : -1;
+    const replies = simulateReplies(), arrived = deliverInvites();
     render();
-    if (state.day === MONTHS[THIS].days) {
+    if (arrived.length) toast(t("inviteArrived", { name: nameOf(arrived[arrived.length - 1].from) }));
+    else if (replies.length) toast(replies.length === 1 ? replyText(replies[0]) : t("repliesToast", { n: replies.length }));
+    else if (state.day === MONTHS[THIS].days) {
       const [artist] = groupArtists(state.group, { kind: "month", mi: THIS })[0] || [];
       const winner = artist && leaderboard(state.group, artist, { kind: "month", mi: THIS })[0];
       if (winner) toast(t("monthWinner", { name: who(winner.pk), artist }));
@@ -1461,23 +1615,46 @@ const ACTIONS = {
     render();
   },
   "reset-day": () => { state.day = CONFIG.sim.startDay; state.newAlertDay = null; render(); },
-  "reset-demo": () => { clearSaved(); Object.assign(state, { day: CONFIG.sim.startDay, joined: [...CONFIG.startJoined], group: CONFIG.startJoined[0], challenges: structuredClone(CONFIG.challenges), sponsorJoined: [], newAlertDay: null, challengeForm: null }); go("home"); },
+  "reset-demo": () => { clearSaved(); Object.assign(state, { day: CONFIG.sim.startDay, joined: [...CONFIG.startJoined], group: CONFIG.startJoined[0], challenges: structuredClone(CONFIG.challenges), sponsorJoined: [], newAlertDay: null, challengeForm: null, notes: [], seenInvites: [], inboxFresh: [] }); deliverInvites(); go("home"); },
   "rank-scope": (v) => { state.rankScope = v; render(); },
   "recap-scope": (v) => { state.recapScope = v; render(); },
   "pick-artist": (v) => { state.rankArtist = v; render(); $("#board")?.scrollIntoView({ block: "nearest" }); },
-  "new-challenge": () => { state.challengeForm = { type: "duel" }; render(); },
+  "new-challenge": () => { state.challengeForm = { picked: [], artist: null, stakes: null }; render(); $("#challenge-form")?.scrollIntoView({ block: "nearest" }); },
   "close-form": () => { state.challengeForm = null; render(); },
-  "create-challenge": () => {
-    const gk = state.group, members = membersOf(gk), me = members.includes(CONFIG.viewer) ? CONFIG.viewer : members[0];
-    const type = $("#ch-type").value, artist = $("#ch-artist").value;
-    const target = Math.max(1, Math.min(100000, parseInt($("#ch-target")?.value, 10) || 1));
-    const stakes = ($("#ch-stakes").value || "").trim().slice(0, 80) || t("defaultStakes");
-    const ch = type === "goal" ? { type, artist, target, stakes } : { type, a: me, b: $("#ch-b").value, artist, stakes, ...(type === "recommend" ? { target } : {}) };
-    const list = (state.challenges[gk] = (state.challenges[gk] || []).filter((c) => validChallenge(c, gk)));
-    if (list.length >= CONFIG.freeChallengeLimit || !validChallenge(ch, gk)) { render(); return; }
-    list.push(ch); state.challengeForm = null; render(); toast(t("challengeCreated"));
+  "ch-pick": (v) => {
+    const f = state.challengeForm; if (!f) return;
+    f.picked = f.picked.includes(v) ? f.picked.filter((x) => x !== v) : [...f.picked, v];
+    render(); document.querySelector(`[data-action="ch-pick"][data-value="${v}"]`)?.focus();
   },
-  "end-challenge": (v) => { const gk = state.group; state.challenges[gk] = (state.challenges[gk] || []).filter((c) => validChallenge(c, gk)); state.challenges[gk].splice(Number(v), 1); render(); toast(t("challengeEnded")); },
+  "ch-send": () => {
+    const gk = state.group, f = state.challengeForm, members = membersOf(gk);
+    if (!f || !f.picked.length || slotsUsed(gk) >= CONFIG.freeChallengeLimit) return;
+    const invited = f.picked.filter((pk) => members.includes(pk) && !isViewer(pk));
+    const stakes = (f.stakes ?? t("defaultStakes")).trim().slice(0, 80) || t("defaultStakes");
+    (state.challenges[gk] ||= []).push({ id: "c" + Date.now().toString(36), from: CONFIG.viewer, invited, accepted: [], declined: [], artist: f.artist, stakes, sentDay: state.day });
+    state.challengeForm = null; render(); toast(t("sentToast", { names: invited.map(nameOf).join(", ") }));
+  },
+  "ch-accept": (v) => {
+    const hit = findCh(v); if (!hit || !viewerInvited(hit.ch)) return;
+    if (slotsUsed(hit.gk) >= CONFIG.freeChallengeLimit) { toast(t("challengeLimit", { max: CONFIG.freeChallengeLimit })); return; }
+    hit.ch.accepted.push(CONFIG.viewer); render(); toast(t("acceptedToast", { title: chTitle(hit.ch) }));
+  },
+  "ch-decline": (v) => {
+    const hit = findCh(v); if (!hit || !viewerInvited(hit.ch)) return;
+    hit.ch.declined.push(CONFIG.viewer); render(); toast(t("declinedToast", { name: nameOf(hit.ch.from) }));
+  },
+  // The sender ends (or cancels) their challenge; anyone else who accepted can leave it.
+  "ch-end": (v) => {
+    const hit = findCh(v); if (!hit || hit.ch.from !== CONFIG.viewer) return;
+    const wasPending = chStatus(hit.ch) === "pending";
+    state.challenges[hit.gk] = state.challenges[hit.gk].filter((c) => c.id !== v); render();
+    toast(t(wasPending ? "challengeCancelled" : "challengeEnded"));
+  },
+  "ch-leave": (v) => {
+    const hit = findCh(v); if (!hit || !hit.ch.accepted.includes(CONFIG.viewer)) return;
+    hit.ch.accepted = hit.ch.accepted.filter((pk) => !isViewer(pk)); hit.ch.declined.push(CONFIG.viewer); render(); toast(t("challengeLeft"));
+  },
+  "open-inbox": () => { state.inboxFresh = state.notes.filter((n) => !n.read).map((n) => n.id); state.notes.forEach((n) => { n.read = true; }); overlay("inbox"); },
   "sponsor-join": (v) => {
     const sp = CONFIG.sponsored.find((x) => x.id === v);
     if (!sp) return;
@@ -1502,6 +1679,7 @@ document.addEventListener("keydown", (e) => {
   if (e.key === "Enter" && e.target.id === "join-code") ACTIONS.join();
 });
 document.addEventListener("input", (e) => {
+  if (e.target.id === "ch-stakes" && state.challengeForm) state.challengeForm.stakes = e.target.value;
   if (e.target.id === "artist-search") { state.rankSearch = e.target.value; $("#artist-list").innerHTML = artistListHtml(groupArtists(state.group, scopeOf(state.rankScope))); }
 });
 document.addEventListener("change", (e) => {
@@ -1512,7 +1690,7 @@ document.addEventListener("change", (e) => {
   else if (id === "compare-b") { state.compareB = v; render(); }
   else if (id === "share-artist") { state.shareArtist = v; render(); }
   else if (id === "share-friend") { state.shareFriend = v; render(); }
-  else if (id === "ch-type") { state.challengeForm = { type: v }; render(); }
+  else if (id === "ch-artist" && state.challengeForm) state.challengeForm.artist = v;
 });
 
 buildNav();
