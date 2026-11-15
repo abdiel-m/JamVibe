@@ -149,6 +149,16 @@ body::before { content: ""; position: fixed; inset: 0 0 auto; height: env(safe-a
 
 /* Challenges */
 .ch-type { font-size: 12px; color: var(--muted); font-weight: 600; }
+.sponsor { background: linear-gradient(135deg, #FF8A4C1F, transparent 55%), var(--s1); }
+.sponsor-by { font-size: 12px; font-weight: 700; color: var(--accent); }
+.sponsor-row > span { gap: 4px; }
+.tiers li { display: flex; align-items: baseline; gap: var(--sp-3); padding: 9px 0; box-shadow: 0 1px 0 #FFFFFF0D; min-width: 0; }
+.tiers li:last-child { box-shadow: none; }
+.tier-label { font: 800 15px/1.2 var(--display); min-width: 72px; flex: none; }
+.tier-state { color: var(--muted); white-space: nowrap; display: inline-flex; align-items: center; gap: 4px; }
+.tier-state svg { width: 14px; height: 14px; }
+.tiers li.on .tier-label, .tiers li.on .tier-state { color: var(--up); }
+.fine { font-size: 11px; color: var(--faint); }
 
 /* Match */
 .ring-wrap { position: relative; width: 176px; height: 176px; margin: 0 auto; }
@@ -343,6 +353,21 @@ const CONFIG = {
   },
   freeChallengeLimit: 2,
 
+  // Sponsored challenges, paid for by concert promoters or an artist's team. Example sponsors for the demo only.
+  // Ranked on plays this month against every listener in the demo. Rewards: top N, top N %, or N+ plays.
+  sponsored: [
+    { id: "gaga-northside", kind: "promoter", sponsor: "Northside Arena", artist: "Lady Gaga", title: "Gaga month at Northside Arena",
+      rewards: [{ top: 1, text: "Meet the artist backstage" }, { pct: 10, text: "30% off tickets" }, { min: 50, text: "Presale code for the next tour" }] },
+    { id: "taylor-team", kind: "artist", artist: "Taylor Swift", title: "Listening party race",
+      rewards: [{ top: 1, text: "Signed vinyl and a video shout-out" }, { pct: 10, text: "Early access to the next single" }, { min: 20, text: "Invite to the online listening party" }] },
+    { id: "kendrick-basement", kind: "promoter", sponsor: "Basement Sessions", artist: "Kendrick Lamar", title: "Road to the arena",
+      rewards: [{ top: 3, text: "Two floor tickets" }, { pct: 25, text: "15% off tour merch" }] },
+    { id: "ariana-harbor", kind: "promoter", sponsor: "Harbor Live", artist: "Ariana Grande", title: "Harbor Live presents",
+      rewards: [{ top: 1, text: "Meet the artist" }, { pct: 10, text: "30% off tickets" }, { min: 30, text: "Members-only ticket window" }] },
+    { id: "twice-team", kind: "artist", artist: "TWICE", title: "ONCE more",
+      rewards: [{ top: 1, text: "Meet & greet at a tour stop" }, { pct: 10, text: "30% off tickets" }] },
+  ],
+
   // Group awards in Recap. {name}, {pct}, {artist}, {genre}, {count} are filled in.
   awards: [
     { id: "loyal",    title: "Most loyal",     text: "{name} gave {pct} of their plays to {artist}." },
@@ -411,6 +436,17 @@ const TEXT = {
   stakes: "Stakes: {stakes}",
   fieldType: "Type", fieldYou: "You", fieldOpponent: "Opponent", fieldFriend: "Friend", fieldArtist: "Artist", fieldTarget: "Target plays", fieldStakes: "Stakes",
   defaultStakes: "Bragging rights",
+  // Sponsored challenges
+  spSection: "Sponsored", spSectionSub: "Paid for by promoters and artists. They don't use your free challenge slots.",
+  spPromoterBy: "Presented by {sponsor}", spArtistBy: "Promoted by {artist}'s team", spBadge: "Sponsored",
+  spRule: "Most {artist} plays this month wins. Ranked against all {n} listeners in this demo.",
+  spStanding: "You're #{rank} of {n} · top {pct}%", spStandingNone: "You haven't played {artist} this month yet.",
+  spLeader: "{name} leads with {n}", spQualify: "You qualify", spNeed: "{n} to go",
+  spTierTop1: "#1", spTierTop: "Top {n}", spTierPct: "Top {n}%", spTierMin: "{n}+ plays",
+  spJoin: "Join", spLeave: "Leave", spJoinedToast: "You joined {title}.", spLeftToast: "You left {title}.",
+  spDisclaimer: "Example sponsor for this demo. Not a real offer and not affiliated with the artist.",
+  spHomeJoined: "{title} · {standing}", spHomeFeatured: "{reward} for the top {artist} fan",
+  groupChallenges: "Your group's challenges",
   // Recap
   recapTitle: "{month}", recapSoFar: "{month} so far", recapLede: "{artist} led the group with {n}.", recapLedeEmpty: "No plays yet.",
   topArtist: "Top artist", topGenre: "Top genre", totalPlays: "Group plays", biggestFan: "Biggest fan",
@@ -497,7 +533,7 @@ function pick(cum, r) { const x = r * cum[cum.length - 1]; let lo = 0, hi = cum.
 /* ----- Storage: optional convenience only; the app works without it ----- */
 const STORE_KEY = "jamvibe-demo-v1";
 function loadSaved() { try { return JSON.parse(localStorage.getItem(STORE_KEY) || "null"); } catch { return null; } }
-function save() { try { localStorage.setItem(STORE_KEY, JSON.stringify({ joined: state.joined, challenges: state.challenges, day: state.day, group: state.group })); } catch { /* storage blocked: keep in memory */ } }
+function save() { try { localStorage.setItem(STORE_KEY, JSON.stringify({ joined: state.joined, challenges: state.challenges, day: state.day, group: state.group, sponsorJoined: state.sponsorJoined })); } catch { /* storage blocked: keep in memory */ } }
 function clearSaved() { try { localStorage.removeItem(STORE_KEY); } catch { /* ignore */ } }
 
 /* =====================================================================================
@@ -636,6 +672,28 @@ function closestRace(gk) {
   return best;
 }
 
+/** Sponsored challenges that matter here: someone in the group listens to the artist. Joined ones first. */
+function sponsoredFor(gk) {
+  const members = membersOf(gk);
+  return CONFIG.sponsored.filter((sp) => members.some((pk) => ARTIST_INDEX[pk].has(sp.artist)))
+    .sort((a, b) => state.sponsorJoined.includes(b.id) - state.sponsorJoined.includes(a.id));
+}
+/** The viewer's standing in a sponsored challenge, ranked against every listener in the demo, this month. */
+function sponsorStanding(sp) {
+  const scope = { kind: "month", mi: THIS };
+  const pool = Object.keys(DATA.people).map((pk) => ({ pk, plays: playsOf(pk, sp.artist, scope) })).sort((a, b) => b.plays - a.plays || byName(a.pk, b.pk));
+  const n = pool.length, rank = rankOf(pool, CONFIG.viewer), me = pool[rank - 1];
+  const tiers = sp.rewards.map((r) => {
+    const cutoff = r.top || (r.pct ? Math.max(1, Math.ceil((n * r.pct) / 100)) : null);
+    const label = r.top ? (r.top === 1 ? t("spTierTop1") : t("spTierTop", { n: r.top })) : r.pct ? t("spTierPct", { n: r.pct }) : t("spTierMin", { n: r.min });
+    const qualifies = me.plays > 0 && (r.min ? me.plays >= r.min : rank <= cutoff);
+    // Plays still needed: to reach the threshold, or to pass the person currently holding the last qualifying spot.
+    const need = qualifies ? 0 : r.min ? r.min - me.plays : pool[cutoff - 1].plays - me.plays + 1;
+    return { ...r, label, cutoff, qualifies, need };
+  });
+  return { n, rank, plays: me.plays, pct: Math.max(1, Math.ceil((rank / n) * 100)), leader: pool[0], tiers };
+}
+
 /* =====================================================================================
    STATE
    ===================================================================================== */
@@ -649,6 +707,7 @@ const state = {
   rankScope: "this", recapScope: "this", rankArtist: null, rankSearch: "",
   matchA: CONFIG.viewer, matchB: null, compareA: null, compareB: null, shareArtist: null,
   shareTpl: "big", sharePalette: "ember", shareFriend: null,
+  sponsorJoined: Array.isArray(saved?.sponsorJoined) ? saved.sponsorJoined : [],
   newAlertDay: null, challengeForm: null, joinMessage: null, joinCode: "",
 };
 if (!state.joined.includes(state.group)) state.group = state.joined[0];
@@ -723,6 +782,12 @@ function renderHome() {
           <div class="row small muted">${avatar(s.leaner, "xs")}<span>${esc(tYou("leansHardest", s.leaner, { name: who(s.leaner), pct: pct(s.lean) }))}</span></div></li>`).join("")}</ul>
     </section>
 
+    ${(() => {
+      const sps = sponsoredFor(gk); if (!sps.length) return "";
+      const sp = sps[0], joined = state.sponsorJoined.includes(sp.id), st = sponsorStanding(sp);
+      const line = joined ? t("spHomeJoined", { title: sp.title, standing: standingText(sp, st) }) : t("spHomeFeatured", { reward: sp.rewards[0].text, artist: sp.artist });
+      return `<button class="row-link sponsor-row" data-action="race-view" data-value="challenges"><span><span class="sponsor-by">${tx("spBadge")} · ${esc(sp.kind === "artist" ? t("spArtistBy", { artist: sp.artist }) : t("spPromoterBy", { sponsor: sp.sponsor }))}</span><b>${esc(line)}</b></span>${icon("arrow")}</button>`;
+    })()}
     <button class="row-link" data-action="open-compare"><span><b>${tx("compareGroups")}</b></span>${icon("arrow")}</button>
     <button class="link center" data-action="reset-demo">${tx("resetDemo")}</button>
   </section>`;
@@ -823,12 +888,38 @@ function validChallenge(ch, gk) {
   return ["duel", "recommend", "goal"].includes(ch.type) && (ch.type === "goal" || (m.includes(ch.a) && m.includes(ch.b)));
 }
 
+function standingText(sp, st) {
+  return st.plays ? t("spStanding", { rank: st.rank, n: st.n, pct: st.pct }) : t("spStandingNone", { artist: sp.artist });
+}
+function sponsorCard(sp) {
+  const st = sponsorStanding(sp), joined = state.sponsorJoined.includes(sp.id);
+  return `
+  <article class="card sponsor" data-sponsor="${esc(sp.id)}">
+    <div class="row between"><span class="sponsor-by">${esc(sp.kind === "artist" ? t("spArtistBy", { artist: sp.artist }) : t("spPromoterBy", { sponsor: sp.sponsor }))}</span><span class="pill">${tx("spBadge")}</span></div>
+    <h3>${esc(sp.title)}</h3>
+    <p class="small muted">${tx("spRule", { artist: sp.artist, n: st.n })} ${esc(daysLeftText())}.</p>
+    <ul class="list-plain tiers">${st.tiers.map((tr) => `
+      <li class="${tr.qualifies ? "on" : ""}"><span class="tier-label">${esc(tr.label)}</span><span class="grow">${esc(tr.text)}</span>
+        <span class="tier-state small">${tr.qualifies ? `${icon("check")}${tx("spQualify")}` : st.plays || tr.min ? tx("spNeed", { n: playsText(tr.need) }) : ""}</span></li>`).join("")}</ul>
+    <div class="row between">
+      <div class="grow"><b class="small">${esc(standingText(sp, st))}</b><div class="small muted">${tx("spLeader", { name: who(st.leader.pk), n: playsText(st.leader.plays) })}</div></div>
+      <button class="btn small ${joined ? "ghost" : ""}" data-action="sponsor-join" data-value="${esc(sp.id)}" aria-pressed="${joined}">${joined ? tx("spLeave") : tx("spJoin")}</button>
+    </div>
+    <p class="fine">${tx("spDisclaimer")}</p>
+  </article>`;
+}
 function renderChallenges() {
   const gk = state.group, list = (state.challenges[gk] || []).filter((c) => validChallenge(c, gk)), max = CONFIG.freeChallengeLimit;
   return `
   <section class="page">
     ${raceSwitch("challenges")}
     ${pageHead(t("challengesTitle"), t("challengesLede", { n: list.length, max, left: daysLeftText() }), simTag())}
+    ${sponsoredFor(gk).length ? `<section class="block" id="sponsored">
+      <div class="block-h"><h2>${tx("spSection")}</h2></div>
+      <p class="small muted">${tx("spSectionSub")}</p>
+      ${sponsoredFor(gk).map(sponsorCard).join("")}
+    </section>` : ""}
+    <h2>${tx("groupChallenges")}</h2>
     ${list.length ? list.map((ch, i) => { const v = challengeView(ch, gk); return `
       <div class="card">
         <div class="row between"><span class="ch-type">${esc(v.type)}</span><button class="link" data-action="end-challenge" data-value="${i}">${tx("endChallenge")}</button></div>
@@ -1325,7 +1416,7 @@ const ACTIONS = {
     render();
   },
   "reset-day": () => { state.day = CONFIG.sim.startDay; state.newAlertDay = null; render(); },
-  "reset-demo": () => { clearSaved(); Object.assign(state, { day: CONFIG.sim.startDay, joined: [...CONFIG.startJoined], group: CONFIG.startJoined[0], challenges: structuredClone(CONFIG.challenges), newAlertDay: null, challengeForm: null }); go("home"); },
+  "reset-demo": () => { clearSaved(); Object.assign(state, { day: CONFIG.sim.startDay, joined: [...CONFIG.startJoined], group: CONFIG.startJoined[0], challenges: structuredClone(CONFIG.challenges), sponsorJoined: [], newAlertDay: null, challengeForm: null }); go("home"); },
   "rank-scope": (v) => { state.rankScope = v; render(); },
   "recap-scope": (v) => { state.recapScope = v; render(); },
   "pick-artist": (v) => { state.rankArtist = v; render(); $("#board")?.scrollIntoView({ block: "nearest" }); },
@@ -1342,6 +1433,14 @@ const ACTIONS = {
     list.push(ch); state.challengeForm = null; render(); toast(t("challengeCreated"));
   },
   "end-challenge": (v) => { const gk = state.group; state.challenges[gk] = (state.challenges[gk] || []).filter((c) => validChallenge(c, gk)); state.challenges[gk].splice(Number(v), 1); render(); toast(t("challengeEnded")); },
+  "sponsor-join": (v) => {
+    const sp = CONFIG.sponsored.find((x) => x.id === v);
+    if (!sp) return;
+    const on = state.sponsorJoined.includes(v);
+    state.sponsorJoined = on ? state.sponsorJoined.filter((x) => x !== v) : [...state.sponsorJoined, v];
+    render();
+    toast(t(on ? "spLeftToast" : "spJoinedToast", { title: sp.title }));
+  },
   "share-tpl": (v) => navigate(() => { state.shareTpl = v; render(); }),
   "share-palette": (v) => navigate(() => { state.sharePalette = v; render(); }),
   "save-image": () => saveImage(),
