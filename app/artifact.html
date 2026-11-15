@@ -96,7 +96,10 @@ body::before { content: ""; position: fixed; inset: 0 0 auto; height: env(safe-a
 .row-link > span { display: grid; gap: 2px; min-width: 0; }
 .seg { position: relative; display: grid; grid-auto-flow: column; grid-auto-columns: 1fr; background: var(--s1); border-radius: 999px; padding: 4px; }
 .seg::before { content: ""; position: absolute; top: 4px; bottom: 4px; left: 4px; width: calc((100% - 8px) / var(--n)); border-radius: 999px; background: var(--s3); transform: translateX(calc(var(--i) * 100%)); }
-.seg button { position: relative; z-index: 1; border: 0; background: none; padding: 8px 6px; border-radius: 999px; font-weight: 600; font-size: 13px; color: var(--muted); }
+.seg button { position: relative; z-index: 1; border: 0; background: none; padding: 8px 6px; border-radius: 999px; font-weight: 600; font-size: 13px; line-height: 1.15; text-wrap: balance; color: var(--muted); }
+.seg[data-seg="race"] { border-radius: 18px; }
+.seg[data-seg="race"]::before { border-radius: 14px; }
+.seg[data-seg="race"] button { border-radius: 14px; font-size: 12.5px; padding: 7px 4px; min-height: 44px; }
 .seg button[aria-pressed="true"] { color: var(--fg); }
 .field { display: grid; gap: 6px; font-size: 13px; font-weight: 600; color: var(--muted); }
 .input, select.input { width: 100%; background: var(--s1); border: 0; border-radius: var(--r-s); padding: 12px; color: var(--fg); font-weight: 500; font-size: 15px; }
@@ -130,7 +133,18 @@ body::before { content: ""; position: fixed; inset: 0 0 auto; height: env(safe-a
 .feed .when { font-size: 12px; color: var(--faint); white-space: nowrap; padding-top: 2px; }
 .feed li.is-new p { font-weight: 600; }
 .feed li.is-new .when { color: var(--accent); font-weight: 600; }
-.sound li { display: grid; gap: 6px; padding: var(--sp-2) 0; }
+.donut-wrap { position: relative; width: 200px; height: 200px; margin: var(--sp-2) auto 0; }
+.donut { width: 100%; height: 100%; transform: rotate(-90deg); display: block; }
+.donut circle { fill: none; stroke-width: 14; }
+.donut-bg { stroke: var(--s1); }
+.arc { stroke-dasharray: var(--len) calc(100 - var(--len)); stroke-dashoffset: calc(-1 * var(--start)); }
+.donut.has-focus .arc:not(.on) { opacity: 0.35; }
+.donut-center { position: absolute; inset: 0; display: grid; place-content: center; justify-items: center; gap: 2px; text-align: center; }
+.donut-num { font: 800 42px/1 var(--display); letter-spacing: -0.03em; }
+.sound-row { display: flex; align-items: center; gap: var(--sp-3); width: 100%; text-align: left; border: 0; background: none; border-radius: var(--r-s); padding: 8px; min-width: 0; }
+.sound-row[aria-pressed="true"] { background: var(--s1); }
+.sound { margin-inline: -8px; }
+.sw { width: 12px; height: 12px; border-radius: 4px; flex: none; }
 
 /* Race: leaderboard */
 .board { display: grid; gap: var(--sp-2); }
@@ -224,6 +238,12 @@ body::before { content: ""; position: fixed; inset: 0 0 auto; height: env(safe-a
   .odo-strip { transition: transform 450ms var(--dec); }                /* day number rolls like an odometer */
   .bar i { transition: width 400ms var(--std); }
   .ring-fg { animation: ring-draw 700ms var(--dec) both; }
+  /* Group Sound: slices draw in one after another when Home opens; dimming follows the chosen genre */
+  #screen.enter .arc { animation: arc-in 650ms var(--dec) both; animation-delay: calc(150ms + var(--k) * 130ms); }
+  @keyframes arc-in { from { stroke-dasharray: 0 100; } }
+  .arc { transition: opacity 250ms var(--std); }
+  .sound-row { transition: background-color 200ms var(--std), transform 100ms var(--std); }
+  .sound-row:active { transform: scale(0.98); }
   @keyframes ring-draw { from { stroke-dashoffset: 100; } }
   .feed li.is-new { animation: feed-in 420ms var(--dec) both; }
   @keyframes feed-in { from { opacity: 0; transform: translateY(-10px); } }
@@ -307,9 +327,11 @@ const CONFIG = {
   // Gradient at the top of each screen. Built around the JamVibe orange (hue ~20°):
   // gold and coral are its neighbors (analogous), teal is its opposite (complementary), violet is triadic.
   theme: {
-    screens: { home: "#FF8A4C", rank: "#F2B33D", match: "#FF5E7A", challenges: "#2FB8C4", recap: "#8C6BFF",
+    screens: { home: "#FF8A4C", rank: "#F2B33D", match: "#FF5E7A", challenges: "#2FB8C4", sponsored: "#2FB8C4", recap: "#8C6BFF",
                compare: "#FF8A4C", share: "#FF8A4C", join: "#FF8A4C" },
     strength: "66",                      // gradient opacity as a hex alpha (00-FF)
+    // Group Sound donut: the tab colors, alternating warm and cool so neighboring slices stay distinct.
+    sound: ["#FF8A4C", "#2FB8C4", "#F2B33D", "#8C6BFF", "#FF5E7A"],
   },
   // Share cards: three layouts and curated palettes (bg, ink, accent, muted) that echo the tab colors.
   share: {
@@ -380,7 +402,7 @@ const CONFIG = {
 const TEXT = {
   // Navigation
   navHome: "Home", navRace: "Race", navMatch: "Match", navRecap: "Recap",
-  raceBoards: "Leaderboards", raceChallenges: "Challenges",
+  raceBoards: "Leaderboards", raceChallenges: "Group challenges", raceSponsored: "Sponsored challenges",
   back: "Back",
   // Labels
   simLabel: "Simulated month · example numbers",
@@ -400,7 +422,7 @@ const TEXT = {
   alertDay: "Day {day}",
   closestRace: "Closest race", closestRaceText: "{leader} leads {chaser} by {gap} for {artist}.", closestRaceTextYou: "You lead {chaser} by {gap} for {artist}.",
   closestRaceTied: "{leader} and {chaser} are tied for {artist}.", noRace: "No close races yet.",
-  groupSound: "Group Sound", groupSoundSub: "Top genres, with every member weighted equally", leansHardest: "{name} leans hardest ({pct})", leansHardestYou: "You lean hardest ({pct})",
+  groupSound: "Group Sound", soundRest: "Everything else", soundAria: "Group Sound: {list}", groupSoundSub: "Top genres, with every member weighted equally", leansHardest: "{name} leans hardest ({pct})", leansHardestYou: "You lean hardest ({pct})",
   compareGroups: "Compare with another group",
   fabWord: "Day", fabLabel: "Simulate a day (now day {day} of {days})",
   prevDay: "Go back a day (now day {day} of {days})", firstDay: "First day of the month",
@@ -424,7 +446,7 @@ const TEXT = {
   sharedArtists: "Shared artists", noShared: "No artists in common. Time for a recommendation.",
   twins: "Musical twins", opposites: "Musical opposites", pickTwo: "Pick two different people.",
   // Challenges
-  challengesLede: "{n} of {max} active · {left}", challengesTitle: "Challenges", activeChallenges: "Active challenges ({n} of {max})", noChallenges: "No active challenges. Start one.",
+  challengesLede: "{n} of {max} active · {left}", challengesTitle: "Group challenges", activeChallenges: "Active challenges ({n} of {max})", noChallenges: "No active challenges. Start one.",
   newChallenge: "New challenge", createChallenge: "Start challenge", cancel: "Cancel", endChallenge: "End",
   challengeLimit: "The free plan allows two challenges at a time. End one to start another.",
   challengeCreated: "Challenge started.", challengeEnded: "Challenge ended.",
@@ -437,7 +459,7 @@ const TEXT = {
   fieldType: "Type", fieldYou: "You", fieldOpponent: "Opponent", fieldFriend: "Friend", fieldArtist: "Artist", fieldTarget: "Target plays", fieldStakes: "Stakes",
   defaultStakes: "Bragging rights",
   // Sponsored challenges
-  spSection: "Sponsored", spSectionSub: "Paid for by promoters and artists. They don't use your free challenge slots.",
+  spTitle: "Sponsored challenges", spSectionSub: "Paid for by promoters and artists. They don't use your free challenge slots.",
   spPromoterBy: "Presented by {sponsor}", spArtistBy: "Promoted by {artist}'s team", spBadge: "Sponsored",
   spRule: "Most {artist} plays this month wins. Ranked against all {n} listeners in this demo.",
   spStanding: "You're #{rank} of {n} · top {pct}%", spStandingNone: "You haven't played {artist} this month yet.",
@@ -446,7 +468,6 @@ const TEXT = {
   spJoin: "Join", spLeave: "Leave", spJoinedToast: "You joined {title}.", spLeftToast: "You left {title}.",
   spDisclaimer: "Example sponsor for this demo. Not a real offer and not affiliated with the artist.",
   spHomeJoined: "{title} · {standing}", spHomeFeatured: "{reward} for the top {artist} fan",
-  groupChallenges: "Your group's challenges",
   // Recap
   recapTitle: "{month}", recapSoFar: "{month} so far", recapLede: "{artist} led the group with {n}.", recapLedeEmpty: "No plays yet.",
   topArtist: "Top artist", topGenre: "Top genre", totalPlays: "Group plays", biggestFan: "Biggest fan",
@@ -705,6 +726,7 @@ const state = {
   day: Number.isInteger(saved?.day) ? Math.min(Math.max(saved.day, 1), MONTHS[THIS].days) : CONFIG.sim.startDay,
   challenges: saved?.challenges || structuredClone(CONFIG.challenges),
   rankScope: "this", recapScope: "this", rankArtist: null, rankSearch: "",
+  soundFocus: null,
   matchA: CONFIG.viewer, matchB: null, compareA: null, compareB: null, shareArtist: null,
   shareTpl: "big", sharePalette: "ember", shareFriend: null,
   sponsorJoined: Array.isArray(saved?.sponsorJoined) ? saved.sponsorJoined : [],
@@ -776,24 +798,41 @@ function renderHome() {
     <section class="block">
       <h2>${tx("groupSound")}</h2>
       <p class="muted small">${tx("groupSoundSub")}. ${tx("realLabel")}.</p>
-      <ul class="list-plain sound">${sound.map((s) => `
-        <li><div class="row between"><b>${esc(cap(s.genre))}</b><span class="num muted">${pct(s.share)}</span></div>
-          <div class="bar"><i style="width:${s.share * 100}%"></i></div>
-          <div class="row small muted">${avatar(s.leaner, "xs")}<span>${esc(tYou("leansHardest", s.leaner, { name: who(s.leaner), pct: pct(s.lean) }))}</span></div></li>`).join("")}</ul>
+      ${soundDonut(sound)}
     </section>
 
     ${(() => {
       const sps = sponsoredFor(gk); if (!sps.length) return "";
       const sp = sps[0], joined = state.sponsorJoined.includes(sp.id), st = sponsorStanding(sp);
       const line = joined ? t("spHomeJoined", { title: sp.title, standing: standingText(sp, st) }) : t("spHomeFeatured", { reward: sp.rewards[0].text, artist: sp.artist });
-      return `<button class="row-link sponsor-row" data-action="race-view" data-value="challenges"><span><span class="sponsor-by">${tx("spBadge")} · ${esc(sp.kind === "artist" ? t("spArtistBy", { artist: sp.artist }) : t("spPromoterBy", { sponsor: sp.sponsor }))}</span><b>${esc(line)}</b></span>${icon("arrow")}</button>`;
+      return `<button class="row-link sponsor-row" data-action="race-view" data-value="sponsored"><span><span class="sponsor-by">${tx("spBadge")} · ${esc(sp.kind === "artist" ? t("spArtistBy", { artist: sp.artist }) : t("spPromoterBy", { sponsor: sp.sponsor }))}</span><b>${esc(line)}</b></span>${icon("arrow")}</button>`;
     })()}
     <button class="row-link" data-action="open-compare"><span><b>${tx("compareGroups")}</b></span>${icon("arrow")}</button>
     <button class="link center" data-action="reset-demo">${tx("resetDemo")}</button>
   </section>`;
 }
 
-const raceSwitch = (view) => seg("race", "race-view", [["board", t("raceBoards")], ["challenges", t("raceChallenges")]], view);
+/** Group Sound as a donut: slices draw in one after another; the center counts to the focused genre's share. */
+function soundDonut(sound) {
+  const colors = CONFIG.theme.sound, focus = sound.find((s) => s.genre === state.soundFocus) || sound[0];
+  if (!focus) return "";
+  let start = 0;
+  const arc = (len, k, color, cls) => `<circle class="arc ${cls}" cx="60" cy="60" r="48" pathLength="100" style="--len:${Math.max(0, len - 0.9).toFixed(2)};--start:${start.toFixed(2)};--k:${k};stroke:${color}"/>`;
+  const arcs = sound.map((s, k) => { const out = arc(s.share * 100, k, colors[k % colors.length], s.genre === focus.genre ? "on" : ""); start += s.share * 100; return out; });
+  if (100 - start > 0.5) arcs.push(arc(100 - start, sound.length, "var(--s3)", "rest"));
+  const aria = t("soundAria", { list: sound.map((s) => `${s.genre} ${pct(s.share)}`).join(", ") });
+  return `
+    <div class="donut-wrap">
+      <svg class="donut${state.soundFocus ? " has-focus" : ""}" viewBox="0 0 120 120" role="img" aria-label="${esc(aria)}"><circle class="donut-bg" cx="60" cy="60" r="48"/>${arcs.join("")}</svg>
+      <div class="donut-center"><span class="donut-num num" data-count="sound-focus" data-count-from="0">${Math.round(focus.share * 100)}%</span><span class="small muted">${esc(cap(focus.genre))}</span></div>
+    </div>
+    <p class="row small center">${avatar(focus.leaner, "xs")}<span>${esc(tYou("leansHardest", focus.leaner, { name: who(focus.leaner), pct: pct(focus.lean) }))}</span></p>
+    <ul class="list-plain sound">${sound.map((s, k) => `
+      <li><button class="sound-row" data-action="sound-focus" data-value="${esc(s.genre)}" aria-pressed="${s.genre === focus.genre}">
+        <span class="sw" style="background:${colors[k % colors.length]}"></span><b class="grow">${esc(cap(s.genre))}</b>${avatar(s.leaner, "xs")}<span class="num muted">${pct(s.share)}</span></button></li>`).join("")}
+      ${100 - start > 0.5 ? `<li><div class="sound-row is-rest"><span class="sw" style="background:var(--s3)"></span><span class="grow muted">${tx("soundRest")}</span><span class="num muted">${Math.round(100 - start)}%</span></div></li>` : ""}</ul>`;
+}
+const raceSwitch = (view) => seg("race", "race-view", [["board", t("raceBoards")], ["challenges", t("raceChallenges")], ["sponsored", t("raceSponsored")]], view);
 function renderRank() {
   const gk = state.group, scope = scopeOf(state.rankScope), artists = groupArtists(gk, scope);
   if (!state.rankArtist || !artists.some(([a]) => a === state.rankArtist)) state.rankArtist = artists[0]?.[0];
@@ -908,18 +947,21 @@ function sponsorCard(sp) {
     <p class="fine">${tx("spDisclaimer")}</p>
   </article>`;
 }
+function renderSponsored() {
+  const sps = sponsoredFor(state.group);
+  return `
+  <section class="page">
+    ${raceSwitch("sponsored")}
+    ${pageHead(t("spTitle"), t("spSectionSub"), simTag())}
+    <div class="block" id="sponsored">${sps.length ? sps.map(sponsorCard).join("") : `<p class="empty">${tx("noChallenges")}</p>`}</div>
+  </section>`;
+}
 function renderChallenges() {
   const gk = state.group, list = (state.challenges[gk] || []).filter((c) => validChallenge(c, gk)), max = CONFIG.freeChallengeLimit;
   return `
   <section class="page">
     ${raceSwitch("challenges")}
     ${pageHead(t("challengesTitle"), t("challengesLede", { n: list.length, max, left: daysLeftText() }), simTag())}
-    ${sponsoredFor(gk).length ? `<section class="block" id="sponsored">
-      <div class="block-h"><h2>${tx("spSection")}</h2></div>
-      <p class="small muted">${tx("spSectionSub")}</p>
-      ${sponsoredFor(gk).map(sponsorCard).join("")}
-    </section>` : ""}
-    <h2>${tx("groupChallenges")}</h2>
     ${list.length ? list.map((ch, i) => { const v = challengeView(ch, gk); return `
       <div class="card">
         <div class="row between"><span class="ch-type">${esc(v.type)}</span><button class="link" data-action="end-challenge" data-value="${i}">${tx("endChallenge")}</button></div>
@@ -1259,6 +1301,7 @@ function snapshotMotion() {
 /** After render: slide moved rows from their old spot (FLIP), tween numbers, glide segmented highlights. */
 function playMotion(snap) {
   const screen = $("#screen");
+  screen.classList.toggle("enter", MOTION && !snap);   // CSS entrance effects (e.g. donut slices) run only when a screen opens
   screen.querySelectorAll(".seg[data-seg]").forEach((el) => {
     const id = el.dataset.seg, to = Number(el.dataset.index), from = SEG_MEMORY.get(id);
     SEG_MEMORY.set(id, to);
@@ -1300,10 +1343,11 @@ function navigate(update, dir = "none") {
    APP SHELL: top bar, tab bar, day controls, sheet, toast, rendering and events
    ===================================================================================== */
 const TABS = [["home", "navHome", "home"], ["rank", "navRace", "race"], ["match", "navMatch", "match"], ["recap", "navRecap", "recap"]];
-const tabOf = (tab) => (tab === "challenges" ? "rank" : tab);
+const RACE = ["rank", "challenges", "sponsored"];   // Race tab views, left to right
+const tabOf = (tab) => (RACE.includes(tab) ? "rank" : tab);
 const tabIndex = (tab) => TABS.findIndex(([k]) => k === tabOf(tab));
-const SCREENS = { home: renderHome, rank: renderRank, challenges: renderChallenges, match: renderMatch, recap: renderRecap, share: renderShare, compare: renderCompare, join: renderJoin };
-const TITLES = { home: () => CONFIG.groups[state.group].name, rank: () => state.rankArtist || t("raceBoards"), challenges: () => t("challengesTitle"),
+const SCREENS = { home: renderHome, rank: renderRank, challenges: renderChallenges, sponsored: renderSponsored, match: renderMatch, recap: renderRecap, share: renderShare, compare: renderCompare, join: renderJoin };
+const TITLES = { home: () => CONFIG.groups[state.group].name, rank: () => state.rankArtist || t("raceBoards"), challenges: () => t("challengesTitle"), sponsored: () => t("spTitle"),
   match: () => t("matchTitle"), recap: () => t("navRecap"), share: () => t("shareTitle"), compare: () => t("compareTitle"), join: () => t("joinTitle") };
 
 function brandHtml() { const n = CONFIG.appName, i = Math.ceil(n.length / 2); return /^Jam/.test(n) ? `Jam<b>${esc(n.slice(3))}</b>` : `${esc(n.slice(0, i))}<b>${esc(n.slice(i))}</b>`; }
@@ -1371,19 +1415,20 @@ function closeSheet() { $("#sheet").hidden = true; $("#sheet").innerHTML = ""; }
 let toastTimer;
 function toast(msg) { const el = $("#toast"); el.textContent = msg; el.hidden = false; clearTimeout(toastTimer); toastTimer = setTimeout(() => { el.hidden = true; }, msg.length > 60 ? 5000 : 2600); }
 function go(tab) {
-  const from = tabIndex(state.overlay ? state.tab : state.tab), to = tabIndex(tab);
-  const dir = state.overlay ? "back" : to > from || (tab === "challenges" && state.tab === "rank") ? "forward" : to < from || (tab === "rank" && state.tab === "challenges") ? "back" : "none";
+  const from = tabIndex(state.tab), to = tabIndex(tab), rf = RACE.indexOf(state.tab), rt = RACE.indexOf(tab);
+  const dir = state.overlay ? "back" : to !== from ? (to > from ? "forward" : "back") : rf >= 0 && rt >= 0 && rf !== rt ? (rt > rf ? "forward" : "back") : "none";
   navigate(() => { state.tab = tab; state.overlay = null; render(); window.scrollTo(0, 0); }, dir);
 }
 function overlay(name) { closeSheet(); navigate(() => { state.overlay = name; render(); window.scrollTo(0, 0); }, "forward"); }
 
 const ACTIONS = {
   "tab": (v) => go(v),
-  "race-view": (v) => go(v === "challenges" ? "challenges" : "rank"),
+  "race-view": (v) => go({ board: "rank", challenges: "challenges", sponsored: "sponsored" }[v] || "rank"),
+  "sound-focus": (v) => { state.soundFocus = v; render(); },
   "close-overlay": () => navigate(() => { state.overlay = null; render(); }, "back"),
   "open-switcher": openSwitcher,
   "close-sheet": (v, e) => { if (e.target.matches(".sheet-backdrop")) closeSheet(); },   // only taps outside the sheet
-  "switch-group": (v) => { closeSheet(); navigate(() => { state.group = v; state.newAlertDay = null; state.rankArtist = null; render(); }); },
+  "switch-group": (v) => { closeSheet(); navigate(() => { state.group = v; state.newAlertDay = null; state.rankArtist = null; state.soundFocus = null; render(); }); },
   "open-join": () => { state.joinMessage = null; state.joinCode = ""; overlay("join"); },
   "open-compare": () => overlay("compare"),
   "open-share": () => overlay("share"),
