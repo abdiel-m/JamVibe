@@ -5,7 +5,7 @@ Usage: python3 app/build_app.py [path/to/archive.zip]   (run friends.py first)
 Only the block between the markers is replaced, so hand edits to CONFIG/TEXT and app code are kept.
 Real dataset user IDs are never written into the app; people are keyed by their invented first name.
 """
-import csv, io, json, re, sys, zipfile
+import base64, csv, io, json, re, sys, zipfile
 from pathlib import Path
 
 HERE = Path(__file__).parent
@@ -18,6 +18,22 @@ OTHER_SHARE_CAP = 0.5  # shortcut: caps plays outside a person's top 50 so simul
 BEGIN, END = "/* <generated-data> do not edit by hand: python3 app/build_app.py rewrites this block */", "/* </generated-data> */"
 
 
+FONTS = [("Bricolage", "bricolage-grotesque-display.woff2", "600 800"),   # (CSS family, file in app/fonts, weight range)
+         ("Instrument Sans", "instrument-sans.woff2", "400 700")]
+FONT_BEGIN, FONT_END = "/* <embedded-fonts> written by app/build_app.py from app/fonts (SIL OFL) */", "/* </embedded-fonts> */"
+
+
+def embed_fonts(html):
+    """Inline the woff2 files as data: URIs so the app needs no font requests (works offline)."""
+    if FONT_BEGIN not in html:
+        return html
+    faces = "\n".join(
+        f'@font-face {{ font-family: "{fam}"; font-weight: {w}; font-style: normal; font-display: swap; '
+        f'src: url(data:font/woff2;base64,{base64.b64encode((HERE / "fonts" / f).read_bytes()).decode()}) format("woff2"); }}'
+        for fam, f, w in FONTS)
+    return re.sub(re.escape(FONT_BEGIN) + ".*?" + re.escape(FONT_END), lambda _: f"{FONT_BEGIN}\n{faces}\n{FONT_END}", html, flags=re.S)
+
+
 def write_publish_copy(html):
     """<title> through </head> plus the body, without the document wrapper the artifact host adds."""
     head = re.search(r"(<title>.*?)</head>", html, re.S).group(1)
@@ -26,9 +42,11 @@ def write_publish_copy(html):
 
 
 def main():
-    if "--copy-only" in sys.argv:  # after editing CONFIG/TEXT in index.html: refresh artifact.html without re-reading the zip
-        write_publish_copy(APP.read_text())
-        print(f"wrote {PUBLISH.name}")
+    if "--copy-only" in sys.argv:  # after editing CONFIG/TEXT in index.html: refresh fonts + artifact.html without re-reading the zip
+        html = embed_fonts(APP.read_text())
+        APP.write_text(html)
+        write_publish_copy(html)
+        print(f"wrote {APP.name} (fonts) and {PUBLISH.name}")
         return
     fg = json.loads((ROOT / "friend_groups.json").read_text())
     assert len(fg["groups"]) == len(GROUP_KEYS), "expected 3 groups in friend_groups.json; rerun friends.py"
@@ -77,6 +95,7 @@ def main():
     html = APP.read_text()
     assert html.count(BEGIN) == 1 and html.count(END) == 1, "generated-data markers missing in index.html"
     html = re.sub(re.escape(BEGIN) + ".*?" + re.escape(END), lambda _: block, html, flags=re.S)
+    html = embed_fonts(html)
     APP.write_text(html)
 
     write_publish_copy(html)

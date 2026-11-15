@@ -46,6 +46,9 @@ Python 3 standard library only. No packages to install.
 
 - Listening data: a public Last.fm dataset of anonymous listeners.
 - Genre data: [MusicBrainz](https://musicbrainz.org), licensed CC BY-NC-SA 3.0 (attribution, non-commercial). Replace it before any commercial use.
+- Fonts: [Bricolage Grotesque](https://github.com/ateliertriay/bricolage) and [Instrument Sans](https://github.com/Instrument/instrument-sans), SIL Open Font License 1.1. Subset copies and their licenses are in `app/fonts/`; `app/build_app.py` embeds them in the app.
+- Icons: paths adapted from [Lucide](https://lucide.dev), ISC license.
+- Design notes behind the current look: `notes/design-polish-research.md`.
 
 ## Team
 
